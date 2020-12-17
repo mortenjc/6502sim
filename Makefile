@@ -13,7 +13,7 @@ gtest:
 cputest: CPUTest.cpp CPU.cpp CPU.h Memory.h
 	g++ $(CFLAGS) $(TESTFLAGS) CPUTest.cpp CPU.cpp  -o $@
 
-sim6502: sim6502.cpp CPU.h CPU.cpp Memory.h Instructions.h
+sim6502: sim6502.cpp CPU.h CPU.cpp Memory.h Opcodes.h
 	g++ $(CFLAGS) sim6502.cpp CPU.cpp  -o $@
 
 clean:

@@ -1,8 +1,16 @@
+// Copyright (C) 2020 Morten Jagd Christensen, LICENSE: BSD2
+//===----------------------------------------------------------------------===//
+///
+/// \file
+///
+/// \brief Unit tests for 6502 simulator.
+///
+//===----------------------------------------------------------------------===//
 
 #include <gtest/gtest.h>
 #include <Memory.h>
 #include <CPU.h>
-#include <Instructions.h>
+#include <Opcodes.h>
 
 class CPUTest: public ::testing::Test {
 protected:

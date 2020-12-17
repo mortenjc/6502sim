@@ -1,21 +1,49 @@
-
+// Copyright (C) 2020 Morten Jagd Christensen, LICENSE: BSD2
+//===----------------------------------------------------------------------===//
+///
+/// \file
+///
+/// \brief 6502 CPU emulator
+///
+/// Handles program counter (PC), stack pointer (SP), the three registers
+/// X,Y,A and status flags.
+/// The core logic revolves around a loop of the two methods
+///    getInstruction()
+///    handleInstruction()
+///
+/// Individual opcodes are implemented in a bit switch statement
+/// in handleInstruction (CPU.cpp)
+/// Some debugging functionality added
+//===----------------------------------------------------------------------===//
 
 #include <cassert>
 #include <CPU.h>
-#include <Instructions.h>
+#include <Opcodes.h>
 
-
+// Sets registers and flags to zero
+// Sets Stack pointer (SP) to default (0x1FF)
+// Sets program counter (PC) to value read from memory
 void CPU::reset() {
   A = X = Y = 0;
   Status.mask = 0;
-  PC = mem.readWord(0xFFFC);
-  SP = 0x01ff;
+  PC = mem.readWord(power_on_reset_addr);
+  SP = stack_pointer_addr;
 }
 
+
+// Prints PC, SP, registers and flags
 void CPU::debug() {
-  printf("0x%04x(%03x): A(%3d)  X(%3d)  Y(%3d) ",
+  printf("0x%04x(%03x): A:%02x  X:%02x  Y:%02x ",
     PC, SP, A, X, Y);
-  printFlags();
+
+  printf(" [%c%c%c%c%c%c%c] ",
+      Status.bits.C ? 'c' : ' ' ,
+      Status.bits.Z ? 'z' : ' ' ,
+      Status.bits.I ? 'i' : ' ' ,
+      Status.bits.D ? 'd' : ' ' ,
+      Status.bits.B ? 'b' : ' ' ,
+      Status.bits.O ? 'o' : ' ' ,
+      Status.bits.N ? 'n' : ' ' );
 }
 
 uint8_t CPU::getInstruction() {
@@ -26,6 +54,27 @@ bool CPU::handleInstruction(uint8_t instruction) {
   int16_t pcinc{1};
 
   switch (instruction) {
+
+    // Compare
+    case CPXI: { // Compare X register immediate
+      Status.bits.C = 0;
+      Status.bits.Z = 0;
+      Status.bits.N = 0;
+      uint8_t val = mem.readByte(PC + 1);
+      if (X >= val) {
+        Status.bits.C = 1;
+      }
+      if (X == val) {
+        Status.bits.Z = 1;
+      }
+      if ((X - val)&0x80) {
+        Status.bits.N = 1;
+      }
+      pcinc = 2;
+      debug();
+      printf("CPX (I) 0x%02x\n", val);
+    }
+    break;
 
     // CLEAR/SET flags
     case CLC: { // CLC - CLear Carry
@@ -139,7 +188,25 @@ bool CPU::handleInstruction(uint8_t instruction) {
       mem.writeByte(addr, Y);
       pcinc = 3;
       debug();
-      printf("STY (A 0x%04x) %d\n", addr, Y);
+      printf("STY (A 0x%04x) 0x%02x\n", addr, Y);
+    }
+    break;
+
+    case STAAX: { // STA Absolute,X
+      uint16_t addr = mem.readWord(PC + 1);
+      mem.writeByte(addr + X, A);
+      pcinc = 3;
+      debug();
+      printf("STA (A 0x%04x),X 0x%02x\n", addr, X);
+    }
+    break;
+
+    case LDAI: { // LDA Imm
+      A = mem.readByte(PC + 1);
+      updateStatus(A);
+      pcinc = 2;
+      debug();
+      printf("LDA (I) 0x%02x\n", A);
     }
     break;
 
@@ -148,7 +215,7 @@ bool CPU::handleInstruction(uint8_t instruction) {
       updateStatus(X);
       pcinc = 2;
       debug();
-      printf("LDX (I) %d\n", X);
+      printf("LDX (I) 0x%02x\n", X);
     }
     break;
 
@@ -157,7 +224,7 @@ bool CPU::handleInstruction(uint8_t instruction) {
       updateStatus(Y);
       pcinc = 2;
       debug();
-      printf("LDY (I) %d\n", Y);
+      printf("LDY (I) 0x%02x\n", Y);
     }
     break;
 
@@ -199,6 +266,22 @@ bool CPU::handleInstruction(uint8_t instruction) {
     break;
 
     // BRANCHES
+    case BMI: { // Branch if negative (MInus)
+      uint8_t val = mem.readByte(PC + 1);
+      if (Status.bits.N == 1) {
+          if (val & 0x80) {
+            pcinc = - (val - 0x80) + 1;
+          } else {
+            pcinc = val;
+          }
+      } else {
+        pcinc = 2;
+      }
+      debug();
+      printf("BMI 0x%02x (%d)\n", val, pcinc);
+    }
+    break;
+
     case BNE: { // BNE - Branch if not Zero
       uint8_t val = mem.readByte(PC + 1);
       if (Status.bits.Z != 1) {
@@ -281,9 +364,9 @@ bool CPU::handleInstruction(uint8_t instruction) {
 
     default:
       debug();
-      printf("Illegal instruction: 0x%02x\nexiting...\n", instruction);
-      return false;
+      printf("0x%02x\nexiting...\n", instruction);
+      running = false;
   }
   PC += pcinc;
-  return true;
+  return running;
 }

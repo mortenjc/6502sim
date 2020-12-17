@@ -1,4 +1,13 @@
-
+// Copyright (C) 2020 Morten Jagd Christensen, LICENSE: BSD2
+//===----------------------------------------------------------------------===//
+///
+/// \file
+///
+/// \brief Memory abstraction for the 6502 emulator
+///
+/// There is support for reading/writing Bytes (8bits) and Words (16bits)
+/// as well as for loading data and code into memory.
+//===----------------------------------------------------------------------===//
 
 #pragma once
 
@@ -7,6 +16,11 @@
 #include <cstring>
 #include <vector>
 
+
+struct Snippet {
+  uint16_t address;
+  std::vector<uint8_t> data;
+};
 
 class Memory {
 public:
@@ -26,6 +40,12 @@ public:
   void load(uint16_t address, std::vector<uint8_t> & program) {
     assert(address + program.size() < 65536);
     memcpy(mem + address, program.data(), program.size());
+  }
+
+  void loadSnippets(std::vector<Snippet> & snippets) {
+    for (auto & snippet : snippets) {
+      load(snippet.address, snippet.data);
+    }
   }
 
   void dump(uint16_t address, uint16_t bytes) {

@@ -1,4 +1,20 @@
-
+// Copyright (C) 2020 Morten Jagd Christensen, LICENSE: BSD2
+//===----------------------------------------------------------------------===//
+///
+/// \file
+///
+/// \brief 6502 CPU emulator
+///
+/// Handles program counter (PC), stack pointer (SP), the three registers
+/// X,Y,A and status flags.
+/// The core logic revolves around a loop of the two methods
+///    getInstruction()
+///    handleInstruction()
+///
+/// Individual opcodes are implemented in a bit switch statement
+/// in handleInstruction (CPU.cpp)
+/// Some debugging functionality added
+//===----------------------------------------------------------------------===//
 
 #pragma once
 
@@ -9,6 +25,11 @@
 
 class CPU {
 public:
+
+  const uint16_t stack_pointer_addr{0x01FF};
+  const uint16_t power_on_reset_addr{0xFFFC};
+
+  bool running{true};
   uint8_t A, X, Y;
   uint16_t PC;
   uint16_t SP;
@@ -31,18 +52,7 @@ public:
   // Reset CPU - clear registers, set program counter
   void reset();
 
-
-  void printFlags() {
-    printf(" [%c%c%c%c%c%c%c] ",
-        Status.bits.C ? 'c' : ' ' ,
-        Status.bits.Z ? 'z' : ' ' ,
-        Status.bits.I ? 'i' : ' ' ,
-        Status.bits.D ? 'd' : ' ' ,
-        Status.bits.B ? 'b' : ' ' ,
-        Status.bits.O ? 'o' : ' ' ,
-        Status.bits.N ? 'n' : ' ' );
-  }
-
+  //
   uint8_t getInstruction();
 
   // This is where the action is
