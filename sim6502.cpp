@@ -24,15 +24,15 @@ int main(int argc, char * argv[])
 
   //mem.loadSnippets(ldxyi_and_dec);
   //mem.loadSnippets(countdown_y_from_10);
+  //mem.loadSnippets(compare);
   //mem.loadSnippets(add_two_16_bit_numbers);
   mem.loadSnippets(fibonacci);
+  //mem.loadSnippets(sieve_of_eratosthenes);
 
   cpu.reset();
 
-  while (cpu.running ) {
-    uint8_t instruction = cpu.getInstruction();
-    cpu.handleInstruction(instruction);
-  }
+  cpu.run(10000);
+
 
   //mem.dump(0x20, 6); // for add_two_16_bit_numbers
 

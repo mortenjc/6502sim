@@ -25,6 +25,7 @@
 
 class CPU {
 public:
+  enum AMode { None, Immediate, ZeroPage, Absolute, AbsoluteX};
 
   const uint16_t stack_pointer_addr{0x01FF};
   const uint16_t power_on_reset_addr{0xFFFC};
@@ -47,16 +48,31 @@ public:
   } Status;
   Memory & mem;
 
+
   CPU(Memory & memory) : mem(memory) {};
+
+  void run(unsigned int n) {
+    while (running and (n > 0)) {
+      uint8_t instruction = getInstruction();
+      handleInstruction(instruction);
+      n--;
+    }
+  }
+
 
   // Reset CPU - clear registers, set program counter
   void reset();
 
+
   //
-  uint8_t getInstruction();
+  uint8_t getInstruction() {
+    return mem.readByte(PC);
+  }
+
 
   // This is where the action is
   bool handleInstruction(uint8_t instruction);
+
 
   // Updates Zero and Negative flags based on value
   void updateStatus(uint8_t value) {
@@ -70,13 +86,18 @@ public:
     }
   }
 
-  void updepri(uint8_t & val, std::string text) {
-    updateStatus(val);
-    debug();
-    printf("%s\n", text.c_str());
-  }
-
   // print out registers and flags
   void debug();
+  void debug(std::string opcode, uint8_t val, uint16_t addr, AMode mode);
+
+private:
+  // Handles CMPI, CPXI, CPYI, ZP, Absolute
+  int compare(std::string opcode, uint8_t & reg, AMode mode);
+
+  int load(std::string opcode, uint8_t & reg, AMode mode);
+
+  int addcarry(std::string opcode, uint8_t & reg, AMode mode);
+
+  int branch(std::string opcode, uint8_t flag, int8_t onoff);
 
 };

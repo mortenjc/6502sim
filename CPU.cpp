@@ -46,9 +46,32 @@ void CPU::debug() {
       Status.bits.N ? 'n' : ' ' );
 }
 
-uint8_t CPU::getInstruction() {
-   return mem.readByte(PC);
+void CPU::debug(std::string opcode, uint8_t val, uint16_t addr, AMode mode) {
+  printf("0x%04x(%03x): A:%02x  X:%02x  Y:%02x ",
+    PC, SP, A, X, Y);
+
+  printf(" [%c%c%c%c%c%c%c] ",
+      Status.bits.C ? 'c' : ' ' ,
+      Status.bits.Z ? 'z' : ' ' ,
+      Status.bits.I ? 'i' : ' ' ,
+      Status.bits.D ? 'd' : ' ' ,
+      Status.bits.B ? 'b' : ' ' ,
+      Status.bits.O ? 'o' : ' ' ,
+      Status.bits.N ? 'n' : ' ' );
+
+  if (mode == None) {
+    printf("%s\n", opcode.c_str());
+  } else if (mode == Immediate) {
+    printf("%s #$%02x\n", opcode.c_str(), val);
+  } else if (mode == ZeroPage) {
+    printf("%s $%02x (0x%02x)\n", opcode.c_str(), addr, val);
+  } else if (mode == Absolute) {
+    printf("%s $%04x (0x%02x)\n", opcode.c_str(), addr, val);
+  } else if (mode == AbsoluteX) {
+    printf("%s $%04x,X (0x%02x)\n", opcode.c_str(), addr, val);
+  }
 }
+
 
 bool CPU::handleInstruction(uint8_t instruction) {
   int16_t pcinc{1};
@@ -56,139 +79,123 @@ bool CPU::handleInstruction(uint8_t instruction) {
   switch (instruction) {
 
     // Compare
-    case CPXI: { // Compare X register immediate
-      Status.bits.C = 0;
-      Status.bits.Z = 0;
-      Status.bits.N = 0;
-      uint8_t val = mem.readByte(PC + 1);
-      if (X >= val) {
-        Status.bits.C = 1;
-      }
-      if (X == val) {
-        Status.bits.Z = 1;
-      }
-      if ((X - val)&0x80) {
-        Status.bits.N = 1;
-      }
-      pcinc = 2;
-      debug();
-      printf("CPX (I) 0x%02x\n", val);
-    }
-    break;
+    case CMPI: // Compare A register immediate
+      pcinc = compare("CMP", A, CPU::Immediate);
+      break;
+
+    case CMPZP: // Compare A register zero-page
+      pcinc = compare("CMP", A, CPU::ZeroPage);
+      break;
+
+    case CMPA: // Compare A register Absolute
+      pcinc = compare("CMP", A, CPU::Absolute);
+      break;
+
+    case CPXI: // Compare X register immediate
+      pcinc = compare("CPX", X, CPU::Immediate);
+      break;
+
+    case CPXZP: // Compare X register zero-page
+      pcinc = compare("CPX", X, CPU::ZeroPage);
+      break;
+
+    case CPXA: // Compare X register Absolute
+      pcinc = compare("CPX", X, CPU::Absolute);
+      break;
+
+    case CPYI: // Compare Y register immediate
+      pcinc = compare("CPY", Y, CPU::Immediate);
+      break;
+
+    case CPYZP: // Compare Y register zero-page
+      pcinc = compare("CPY", Y, CPU::ZeroPage);
+      break;
+
+    case CPYA: // Compare Y register Absolute
+      pcinc = compare("CPY", Y, CPU::Absolute);
+      break;
+
+
 
     // CLEAR/SET flags
-    case CLC: { // CLC - CLear Carry
+    case CLC: // CLC - CLear Carry
       Status.bits.C = 0;
-      debug();
-      printf("CLC\n");
-    }
-    break;
+      debug("CLC", 0, 0, CPU::None);
+      break;
 
-    case SEC: { // Set Carry
+    case SEC: // Set Carry
       Status.bits.C = 1;
-      debug();
-      printf("SEC\n");
-    }
-    break;
+      debug("SEC", 0, 0, CPU::None);
+      break;
 
-    case CLD: { // CLear Decimal
+    case CLD: // CLear Decimal
       Status.bits.D = 0;
-      debug();
-      printf("CLD\n");
-    }
-    break;
+      debug("CLD", 0, 0, CPU::None);
+      break;
 
-    case SED: { // Set Decimal
+    case SED: // Set Decimal
       Status.bits.D = 1;
-      debug();
-      printf("SED\n");
-    }
-    break;
+      debug("SED", 0, 0, CPU::None);
+      break;
 
     /// ADD SUBTRACT
-    case ADCZP: { // Add with carry - zero page
-      uint8_t zp = mem.readByte(PC + 1);
-      uint8_t zpval = mem.readByte(zp);
-      uint8_t tmp = A + zpval + Status.bits.C;
-      //printf("\nA + zpval + C == 0x%02x + 0x%02x + %d\n", A, zpval, Status.bits.C);
-      if ((A + zpval + Status.bits.C) > 255) {
-        Status.bits.C = 1; // Set carry
-      } else {
-        Status.bits.C = 0; // Clear carry
-      }
-      A = tmp;
-      updateStatus(A);
-      pcinc = 2;
-      debug();
-      printf("ADC (ZP 0x%02x) %d\n", zp, A);
-    }
-    break;
+    case ADCI: // Add with carry - immediate
+      pcinc = addcarry("ADC", A, CPU::Immediate);
+      break;
 
-    //
+    case ADCZP: // Add with carry - zero page
+      pcinc = addcarry("ADC", A, CPU::ZeroPage);
+      break;
+
+    case ADCA: // Add with carry - Absolute
+      pcinc = addcarry("ADC", A, CPU::Absolute);
+      break;
+
+
     // LOAD + STORE
-    case LDAZP: { // LDA Zero Page
-      uint8_t zp = mem.readByte(PC + 1);
-      A = mem.readByte(zp);
-      updateStatus(A);
-      pcinc = 2;
-      debug();
-      printf("LDA (ZP 0x%02x) %d\n", zp, A);
-    }
-    break;
 
-    case LDXZP: { // LDX Zero Page
-      uint8_t zp = mem.readByte(PC + 1);
-      X = mem.readByte(zp);
-      updateStatus(X);
-      pcinc = 2;
-      debug();
-      printf("LDX (ZP 0x%02x) %d\n", zp, X);
-    }
-    break;
+    // LDA
+    case LDAI: // LDA Imm
+      pcinc = load("LDA", A, CPU::Immediate);
+      break;
 
-    case LDYZP: { // LDY Zero Page
-      uint8_t zp = mem.readByte(PC + 1);
-      Y = mem.readByte(zp);
-      updateStatus(Y);
-      pcinc = 2;
-      debug();
-      printf("LDY (ZP 0x%02x) %d\n", zp, Y);
-    }
-    break;
+    case LDAZP: // LDA Zero Page
+      pcinc = load("LDA", A, CPU::ZeroPage);
+      break;
 
+    case LDAAX: // LDA absolute,X
+      pcinc = load("LDA", A, CPU::AbsoluteX);
+      break;
+
+    // LDX
+    case LDXI: // LDX Imm
+      pcinc = load("LDX", X, CPU::Immediate);
+      break;
+
+    case LDXZP: // LDX Zero Page
+      pcinc = load("LDX", X, CPU::ZeroPage);
+      break;
+
+    // LDY
+    case LDYI: // LDY Imm
+      pcinc = load("LDY", Y, CPU::Immediate);
+      break;
+
+    case LDYZP: // LDY Zero Page
+      pcinc = load("LDY", Y, CPU::ZeroPage);
+      break;
+
+    case LDYAX: // LDY absolute,X
+      pcinc = load("LDY", Y, CPU::AbsoluteX);
+      break;
+
+
+    // STA
     case STAZP: { // STA Zero Page
       uint8_t zp = mem.readByte(PC + 1);
       mem.writeByte(zp, A);
       pcinc = 2;
-      debug();
-      printf("STA (ZP 0x%02x) %d\n", zp, A);
-    }
-    break;
-
-    case STXZP: { // STX Zero Page
-      uint8_t zp = mem.readByte(PC + 1);
-      mem.writeByte(zp, X);
-      pcinc = 2;
-      debug();
-      printf("STX (ZP 0x%02x) %d\n", zp, X);
-    }
-    break;
-
-    case STXA: { // STX Absolute
-      uint16_t addr = mem.readWord(PC + 1);
-      mem.writeByte(addr, X);
-      pcinc = 3;
-      debug();
-      printf("STX (A 0x%04x) %d\n", addr, X);
-    }
-    break;
-
-    case STYA: { // STY Absolute
-      uint16_t addr = mem.readWord(PC + 1);
-      mem.writeByte(addr, Y);
-      pcinc = 3;
-      debug();
-      printf("STY (A 0x%04x) 0x%02x\n", addr, Y);
+      debug("STA", A, zp, CPU::ZeroPage);
     }
     break;
 
@@ -201,45 +208,46 @@ bool CPU::handleInstruction(uint8_t instruction) {
     }
     break;
 
-    case LDAI: { // LDA Imm
-      A = mem.readByte(PC + 1);
-      updateStatus(A);
+    // STX
+    case STXZP: { // STX Zero Page
+      uint8_t zp = mem.readByte(PC + 1);
+      mem.writeByte(zp, X);
       pcinc = 2;
-      debug();
-      printf("LDA (I) 0x%02x\n", A);
+      debug("STX", X, zp, CPU::ZeroPage);
     }
     break;
 
-    case LDXI: { // LDX Imm
-      X = mem.readByte(PC + 1);
-      updateStatus(X);
-      pcinc = 2;
-      debug();
-      printf("LDX (I) 0x%02x\n", X);
+    case STXA: { // STX Absolute
+      uint16_t addr = mem.readWord(PC + 1);
+      mem.writeByte(addr, X);
+      pcinc = 3;
+      debug("STX", X, addr, CPU::Absolute);
     }
     break;
 
-    case LDYI: { // LDY Imm
-      Y = mem.readByte(PC + 1);
-      updateStatus(Y);
-      pcinc = 2;
-      debug();
-      printf("LDY (I) 0x%02x\n", Y);
+    // STY
+    case STYA: { // STY Absolute
+      uint16_t addr = mem.readWord(PC + 1);
+      mem.writeByte(addr, Y);
+      pcinc = 3;
+      debug("STY", Y, addr, CPU::Absolute);
+      //printf("STY (A 0x%04x) 0x%02x\n", addr, Y);
     }
     break;
+
 
     // INC and DEC
-    case INX: { // INX
+    case INX: // INX
       X++;
-      updepri(X, "INX");
-    }
-    break;
+      updateStatus(X);
+      debug("INX", 0, 0, CPU::None);
+      break;
 
-    case INY: { // INY
+    case INY: // INY
       Y++;
-      updepri(Y, "INY");
-    }
-    break;
+      updateStatus(Y);
+      debug("INY", 0, 0, CPU::None);
+      break;
 
     case INCA: { // INC memory absolute
       uint16_t address = mem.readWord(PC + 1);
@@ -253,73 +261,40 @@ bool CPU::handleInstruction(uint8_t instruction) {
     }
     break;
 
-    case DEX: { // DEX
+    case DEX: // DEX
       X--;
-      updepri(X, "DEX");
-    }
+      updateStatus(X);
+      debug("DEX", 0, 0, CPU::None);
     break;
 
-    case DEY: { // DEY
+    case DEY: // DEY
       Y--;
-      updepri(Y, "DEY");
-    }
+      updateStatus(Y);
+      debug("DEY", 0, 0, CPU::None);
     break;
 
     // BRANCHES
-    case BMI: { // Branch if negative (MInus)
-      uint8_t val = mem.readByte(PC + 1);
-      if (Status.bits.N == 1) {
-          if (val & 0x80) {
-            pcinc = - (val - 0x80) + 1;
-          } else {
-            pcinc = val;
-          }
-      } else {
-        pcinc = 2;
-      }
-      debug();
-      printf("BMI 0x%02x (%d)\n", val, pcinc);
-    }
-    break;
+    case BMI: // Branch if negative (MInus)
+      pcinc = branch("BMI", Status.bits.N, 1);
+      break;
 
-    case BNE: { // BNE - Branch if not Zero
-      uint8_t val = mem.readByte(PC + 1);
-      if (Status.bits.Z != 1) {
-          if (val & 0x80) {
-            pcinc = - (val - 0x80) + 1;
-          } else {
-            pcinc = val;
-          }
-      } else {
-        pcinc = 2;
-      }
-      debug();
-      printf("BNE 0x%02x (%d)\n", val, pcinc);
-    }
-    break;
+    case BNE: // BNE - Branch if not Zero
+      pcinc = branch("BNE", Status.bits.Z, 0);
+      break;
 
-    case BEQ: { // BEQ - Branch if Zero
-      uint8_t val = mem.readByte(PC + 1);
-      if (Status.bits.Z == 1) {
-          if (val & 0x80) {
-            pcinc = - (val - 0x80) + 1;
-          } else {
-            pcinc = val;
-          }
-      } else {
-        pcinc = 2;
-      }
-      debug();
-      printf("BEQ 0x%02x (%d)\n", val, pcinc);
-    }
-    break;
+    case BEQ: // BEQ - Branch if Zero
+      pcinc = branch("BEQ", Status.bits.Z, 1);
+      break;
+
+    case BPL: // Branch if positive
+      pcinc = branch("BPL", Status.bits.N, 0);
+      break;
 
     case RTS: { // Return from Subroutine
       uint16_t newaddr = mem.readWord(SP) + 1;
       SP += 2;
       pcinc = 0;
-      debug();
-      printf("RTS\n");
+      debug("RTS", 0, 0, CPU::None);
       PC = newaddr;
     }
     break;
@@ -355,12 +330,22 @@ bool CPU::handleInstruction(uint8_t instruction) {
     }
     break;
 
+    case TAY:
+      Y = A;
+      updateStatus(Y);
+      debug("TAY", 0, 0, CPU::None);
+      break;
+
+    case TYA:
+      A = Y;
+      updateStatus(A);
+      debug("TYA", 0, 0, CPU::None);
+      break;
+
     /// MISC
-    case NOP: { // No operation
-      debug();
-      printf("NOP\n");
-    }
-    break;
+    case NOP: // No operation
+      debug("NOP", 0, 0, CPU::None);
+      break;
 
     default:
       debug();

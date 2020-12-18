@@ -147,6 +147,44 @@ TEST_F(CPUTest, LOADZP) {
   ASSERT_EQ(cpu->Status.bits.N, 1);
 }
 
+TEST_F(CPUTest, CMPI_I) {
+  mem.writeByte(0x1000, LDAI);
+  mem.writeByte(0x1001, 0x01);
+  mem.writeByte(0x1002, CMPI);
+  mem.writeByte(0x1003, 0xFF);
+  cpu->PC = 0x1000;
+  uint8_t inst = cpu->getInstruction();
+  ASSERT_EQ(inst, LDAI);
+  cpu->handleInstruction(inst);
+  inst = cpu->getInstruction();
+  ASSERT_EQ(inst, CMPI);
+
+  cpu->handleInstruction(inst);
+  ASSERT_EQ(cpu->A, 1);
+  ASSERT_EQ(cpu->Status.bits.C, 0);
+  ASSERT_EQ(cpu->Status.bits.Z, 0);
+  ASSERT_EQ(cpu->Status.bits.N, 0);
+}
+
+TEST_F(CPUTest, CMPI_II) {
+  mem.writeByte(0x1000, LDAI);
+  mem.writeByte(0x1001, 0x7F);
+  mem.writeByte(0x1002, CMPI);
+  mem.writeByte(0x1003, 0x80);
+  cpu->PC = 0x1000;
+  uint8_t inst = cpu->getInstruction();
+  ASSERT_EQ(inst, LDAI);
+  cpu->handleInstruction(inst);
+  inst = cpu->getInstruction();
+  ASSERT_EQ(inst, CMPI);
+
+  cpu->handleInstruction(inst);
+  ASSERT_EQ(cpu->A, 0x7F);
+  ASSERT_EQ(cpu->Status.bits.C, 0);
+  ASSERT_EQ(cpu->Status.bits.Z, 0);
+  ASSERT_EQ(cpu->Status.bits.N, 1);
+}
+
 TEST_F(CPUTest, ANDI) {
   mem.writeByte(0x1000, ANDI);
   mem.writeByte(0x1001, 0xFF);

@@ -50,28 +50,27 @@ std::vector<Snippet>  countdown_y_from_10 {
   }
 };
 
-// From https://rosettacode.org/wiki/Fibonacci_sequence#6502_Assembly
-// stores data at 0x2000
-std::vector<Snippet> fibonacci {
+// Testing the compare (X,Y,A) in modes (I, ZP, A)
+std::vector<Snippet>  compare {
   {0x1000, {
-    LDAI,  0,
-    STAZP, 0xF0,       // LOWER NUMBER
-    LDAI,  1,
-    STAZP, 0xF1,       // HIGHER NUMBER
-    LDXI,  0,
-    LDAZP, 0xF1,       // LOOP
-    STAAX, 0x00, 0x20,
-    STAZP, 0xF2,       // OLD HIGHER NUMBER
-    ADCZP, 0xF0,
-    STAZP, 0xF1,       // NEW HIGHER NUMBER
-    LDAZP, 0xF2,
-    STAZP, 0xF0,       // NEW LOWER NUMBER
-    INX,
-    CPXI,  0x0A,       // STOP AT FIB(10)
-    BMI,   0x93,       // -20
-    NOP                // WAS  RTS
-  }}
+    LDAI,  0x00,
+    LDXI,  0x00,
+    LDYI,  0x00,
+    CPXI,  0xFF,
+    CPXZP, 0x10,
+    CPXA,  0x00, 0x20, // 0x2000
+
+    CPYI,  0xFF,
+    CPYZP, 0x10,
+    CPYA,  0x00, 0x20, // 0x2000
+
+    CMPI,  0xFF,
+    CMPZP, 0x10,
+    CMPA,  0x00, 0x20, // 0x2000
+    NOP }
+  }
 };
+
 
 
 // From https://dwheeler.com/6502/oneelkruns/asm1step.html
@@ -93,4 +92,87 @@ std::vector<Snippet> add_two_16_bit_numbers {
     STAZP, 0x25,
     NOP
   }}
+};
+
+
+// From https://rosettacode.org/wiki/Fibonacci_sequence#6502_Assembly
+// stores data at 0x2000
+std::vector<Snippet> fibonacci {
+  {0x1000, {
+    LDAI,  0,
+    STAZP, 0xF0,       // LOWER NUMBER
+    LDAI,  1,
+    STAZP, 0xF1,       // HIGHER NUMBER
+    LDXI,  0,
+    LDAZP, 0xF1,       // LOOP
+    STAAX, 0x00, 0x20,
+    STAZP, 0xF2,       // OLD HIGHER NUMBER
+    ADCZP, 0xF0,
+    STAZP, 0xF1,       // NEW HIGHER NUMBER
+    LDAZP, 0xF2,
+    STAZP, 0xF0,       // NEW LOWER NUMBER
+    INX,
+    CPXI,  0x0A,       // STOP AT FIB(10)
+    BMI,   0x93,       // 18 back -> 128 + 18 + 1
+    NOP                // WAS  RTS
+  }}
+};
+
+
+// Why not? If finding primes lets me discover
+// new opcodes and addressing modes, ....
+// From https://rosettacode.org/wiki/Fibonacci_sequence#6502_Assembly
+// Stores intermediate data from addres 0x2000
+// Final result at address 0x3000
+std::vector<Snippet> sieve_of_eratosthenes {
+  {0x1000, {
+    LDAI,  0xFF,       // 0x1000: If used as subroutine replace with NOP
+// ERATOS
+    STAZP, 0xD0,       // 0x1002: value of n,
+    LDAI,  0x00,       // 0x1004
+    LDXI,  0x00,       // 0x1006
+// SETUP
+    STAAX, 0x00, 0x20, // 0x1008: populate array
+    ADCI,  0x01,       // 0x100B
+    INX,               // 0x100D
+    CPXZP, 0xD0,       // 0x100E
+    BPL,   5,          // 0x1010: to label SET
+    JMPA,  0x08, 0x10, // 0x1012: to label SETUP (0x1008)
+// SET
+    LDXI,  0x02,       // 0x1015:
+// SIEVE
+    LDAAX, 0x00, 0x20, // 0x1017: find non-zero
+    INX,               // 0x101A
+    CPXZP, 0xD0,       // 0x101B
+    BPL,   0x19,       // 0x101D: to label SIEVED
+    CMPI,  0x00,       // 0x101F
+    BEQ,   (128+10+1), // 0x1021 to label SIEVE (-11)
+    STAZP, 0xD1,       // 0x1023: current prime
+// MARK
+    CLC,               // 0x1025
+    ADCZP, 0xD1,       // 0x1026
+    TAY,               // 0x1028
+    LDAI,  0x00,       // 0x1029
+    STAAY, 0x00, 0x20, // 0x102B: addr 0x2000
+    TYA,               // 0x102E
+    CMPZP, 0xD0,       // 0x102F
+    BPL,   (128+26+1), // 0x1031: to label SIEVE
+    JMPA,  0x25, 0x10, // 0x1033: to label MARK
+// SIEVED
+    LDXI,  0x01,       // 0x1036
+    LDYI,  0x00,       // 0x1038
+// COPY
+    INX,               // 0x103A
+    CPXZP, 0xD0,       // 0x103B
+    BPL,     16,       // 0x103D: to label COPIED
+    LDAAX, 0x00, 0x20, // 0x103F: 0x2000
+    CMPI,  0x00,       // 0x1042
+    BEQ,   (128 + 10 + 1), // 0x1044 to label COPY
+    STAAY, 0x00, 0x30, // 0x1046: val 0x3000
+    INY,               // 0x1049
+    JMPA, 0x3A, 0x10,  // 0x104A: to label COPY
+// COPIED
+    TYA,               // 0x104C: how many found
+    NOP }              // was RTS
+  }
 };
