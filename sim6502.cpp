@@ -30,11 +30,11 @@ int main(int argc, char * argv[])
   //mem.loadSnippets(sieve_of_eratosthenes);
 
   cpu.reset();
-
-  cpu.run(10000);
-
+  cpu.debugOn();
+  cpu.run(1000);
 
   //mem.dump(0x20, 6); // for add_two_16_bit_numbers
-
+  mem.dump(0x00F0, 3); // for fibonacci
+  mem.dump(0x2000, 16); // for fibonacci
   return 0;
 }

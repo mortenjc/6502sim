@@ -39,6 +39,7 @@
 #define LDXZP 0xA6
 #define TAY   0xA8
 #define LDAI  0xA9
+#define LDAAY 0xB9
 #define LDYAX 0xBC
 #define LDAAX 0xBD
 
