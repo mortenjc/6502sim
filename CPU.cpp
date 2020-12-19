@@ -28,16 +28,15 @@ void CPU::reset() {
   A = X = Y = 0;
   Status.mask = 0;
   PC = mem.readWord(power_on_reset_addr);
-  SP = stack_pointer_addr;
+  S = 0xFF; // SP = SPBase + S
 }
-
 
 // Prints PC, SP, registers and flags
 void CPU::debug() {
   if (not debugPrint)
     return;
 
-  printf(" ; 0x%04x(%03x): A:%02x  X:%02x  Y:%02x ", PC, SP, A, X, Y);
+  printf(" ; 0x%04x(%03x): A:%02x  X:%02x  Y:%02x ", PC, getSPAddr(), A, X, Y);
   printf(" [%c%c%c%c%c%c%c]\n",
       Status.bits.C ? 'c' : ' ' ,
       Status.bits.Z ? 'z' : ' ' ,
@@ -106,10 +105,10 @@ void CPU::disAssemble(Opcode opc, uint8_t byte, uint16_t word) {
       printf("$%04X       ", word);
       break;
     case AbsoluteX:
-      printf("$%04X,X(%d)  ", word, X);
+      printf("$%04X,X(%3d)", word, X);
       break;
     case AbsoluteY:
-      printf("$%04X,Y(%d)  ", word, Y);
+      printf("$%04X,Y(%3d)", word, Y);
       break;
     case Indirect:
       break;
@@ -189,6 +188,16 @@ bool CPU::handleInstruction(uint8_t opcode) {
       Opc.pf(this, A);
       break;
 
+    case LDAZX:
+      A = mem.readByte(uint8_t(byte + X));
+      Opc.pf(this, A);
+      break;
+
+    case LDAA:
+      A = mem.readByte(word);
+      Opc.pf(this, A);
+      break;
+
     case LDAAX:
       A = mem.readByte(word + X);
       Opc.pf(this, A);
@@ -207,6 +216,11 @@ bool CPU::handleInstruction(uint8_t opcode) {
       mem.writeByte(word + X, A);
       break;
 
+    case STAAY:
+      mem.writeByte(word + Y, A);
+      break;
+
+    // X
     case LDXI:
       X = byte;
       Opc.pf(this, X);
@@ -217,6 +231,35 @@ bool CPU::handleInstruction(uint8_t opcode) {
       Opc.pf(this, X);
       break;
 
+    case LDXZY:
+      X = mem.readByte(byte + Y);
+      Opc.pf(this, X);
+      break;
+
+    case LDXA:
+      X = mem.readByte(word);
+      Opc.pf(this, X);
+      break;
+
+    case LDXAY:
+      X = mem.readByte(word + Y);
+      Opc.pf(this, X);
+      break;
+
+    case STXZP:
+      mem.writeByte(byte, X);
+      break;
+
+    case STXZY:
+      mem.writeByte(byte + Y, X);
+      break;
+
+    case STXA:
+      mem.writeByte(word, X);
+      break;
+
+
+    //
     case LDYI:
       Y = byte;
       Opc.pf(this, Y);
@@ -227,28 +270,46 @@ bool CPU::handleInstruction(uint8_t opcode) {
       Opc.pf(this, Y);
       break;
 
-    case STXZP:
-      mem.writeByte(byte, X);
+    case LDYZX:
+      Y = mem.readByte(byte + X);
+      Opc.pf(this, Y);
       break;
 
+    case LDYA:
+      Y = mem.readByte(word);
+      Opc.pf(this, Y);
+      break;
+
+    case LDYAX:
+      Y = mem.readByte(word + X);
+      Opc.pf(this, Y);
+      break;
+
+    case STYZP:
+      mem.writeByte(byte, Y);
+      break;
+
+    case STYZX:
+      mem.writeByte(byte + X, Y);
+      break;
+
+    case STYA:
+      mem.writeByte(word, Y);
+      break;
 
     //
     // Add/Subtract
-    case ADCZP:
+    case ADCI: // Add with carry Imm
       addcarry(A, byte);
+      break;
+
+    case ADCZP: //Add wih carry - ZP
+      addcarry(A, mem.readByte(byte));
     break;
 
-//   case ADCI: // Add with carry - immediate
-//     pcinc = addcarry("ADC", A, CPU::Immediate);
-//     break;
-//
-//   case ADCZP: // Add with carry - zero page
-//     pcinc = addcarry("ADC", A, CPU::ZeroPage);
-//     break;
-//
-//   case ADCA: // Add with carry - Absolute
-//     pcinc = addcarry("ADC", A, CPU::Absolute);
-//     break;
+    case ADCA: // Add with carry - Absolute
+      addcarry(A, mem.readByte(word));
+      break;
 
 
     //
@@ -343,9 +404,15 @@ bool CPU::handleInstruction(uint8_t opcode) {
       }
     break;
 
+    case BCC: // Branch if carry clear
+      if (Status.bits.C == 0) {
+        pcinc = jumpRelative(byte);
+      }
+    break;
+
     case JSR:
-        SP -= 2;
-        mem.writeWord(SP, (PC + 2));
+        S -= 2;
+        mem.writeWord(getSPAddr(), (PC + 2));
         PC = word;
         pcinc = 0;
       break;
@@ -357,8 +424,8 @@ bool CPU::handleInstruction(uint8_t opcode) {
     break;
 
     case RTS:
-      PC = mem.readWord(SP) + 1;
-      SP += 2;
+      PC = mem.readWord(0x100 + S) + 1;
+      S += 2;
       pcinc = 0;
       break;
 
@@ -370,31 +437,69 @@ bool CPU::handleInstruction(uint8_t opcode) {
       updateStatus(A);
       break;
 
+    case ORAI:
+      A = A | byte;
+      updateStatus(A);
+      break;
+
+    case EORI:
+      A = A ^ byte;
+      updateStatus(A);
+      break;
+
+    case BITZP: {
+      uint8_t M = mem.readByte(byte);
+      uint8_t test = A & M;
+      updateStatus(test);
+      Status.bits.N = (M & 0x80) >> 7;
+      Status.bits.O = (M & 0x40) >> 6;
+    }
+    break;
+
+    case BITA: {
+      uint8_t M = mem.readByte(word);
+      uint8_t test = A & M;
+      updateStatus(test);
+      Status.bits.N = (M & 0x80) >> 7;
+      Status.bits.O = (M & 0x40) >> 6;
+    }
+    break;
+
 
     //
-    // Misc.
+    // Register Transfers (Complete)
     case TAY:
-      Y = A;
-      updateStatus(Y);
+      transfer(A, Y);
       break;
 
     case TYA:
-      A = Y;
-      updateStatus(A);
+      transfer(Y, A);
       break;
+
+    case TAX:
+      transfer(A, X);
+      break;
+
+    case TXA:
+      transfer(X, A);
+      break;
+
+
+    //
 
     case NOP:
       break;
 
     case 0xFF:  // Commands that are invalid
       running = false;
-      printf("registered command ($%02x) exiting...\n", Opc.opcode);
+      if (not debugPrint)
+        printf("unregistered command ($%02x) exiting...\n", Opc.opcode);
       break;
 
     default:
       Opc.pf(this, X);
       running = false;
-      printf("unimplemented command ($%02x) exiting...\n", Opc.opcode);
+      printf(" ; unimplemented command ($%02x) exiting...\n", Opc.opcode);
       break;
   }
 

@@ -28,6 +28,16 @@ protected:
     ASSERT_EQ(value, reg);
   }
 
+
+  void exec1opcmd(uint8_t opcode) {
+    mem.writeByte(0x1000, opcode);
+    cpu->PC = 0x1000;
+    uint8_t inst = cpu->getInstruction();
+    ASSERT_EQ(inst, opcode);
+    bool running = cpu->handleInstruction(inst);
+    ASSERT_TRUE(running);
+  }
+
   void exec2opcmd(uint8_t opcode, uint8_t val) {
     mem.writeByte(0x1000, opcode);
     mem.writeByte(0x1001, val);
@@ -236,91 +246,171 @@ TEST_F(CPUTest, LoadAbsoluteY) {
   }
 }
 
-TEST_F(CPUTest, CMPI_I) {
-  mem.writeByte(0x1000, LDAI);
-  mem.writeByte(0x1001, 0x01);
-  mem.writeByte(0x1002, CMPI);
-  mem.writeByte(0x1003, 0xFF);
-  cpu->PC = 0x1000;
-  uint8_t inst = cpu->getInstruction();
-  ASSERT_EQ(inst, LDAI);
-  cpu->handleInstruction(inst);
-  inst = cpu->getInstruction();
-  ASSERT_EQ(inst, CMPI);
+TEST_F(CPUTest, AddCarry) {
+  //cpu->debugOn();
+  exec2opcmd(LDAI,  0);
+  exec2opcmd(ADCI,  0);
+  ASSERT_EQ(cpu->A, 0);
+  ASSERT_EQ(cpu->Status.bits.C, 0);
+  ASSERT_EQ(cpu->Status.bits.N, 0);
+  ASSERT_EQ(cpu->Status.bits.Z, 1);
 
-  cpu->handleInstruction(inst);
-  ASSERT_EQ(cpu->A, 1);
+  for (int i = 1; i < 0x80; i++) {
+    exec2opcmd(LDAI,  0);
+    exec2opcmd(ADCI,  i);
+    ASSERT_EQ(cpu->A, i);
+    ASSERT_EQ(cpu->Status.bits.C, 0);
+    ASSERT_EQ(cpu->Status.bits.N, 0);
+    ASSERT_EQ(cpu->Status.bits.Z, 0);
+  }
+
+  for (int i = 0x80; i < 0xFF; i++) {
+    exec2opcmd(LDAI,  0);
+    exec2opcmd(ADCI,  i);
+    ASSERT_EQ(cpu->A, i);
+    ASSERT_EQ(cpu->Status.bits.C, 0);
+    ASSERT_EQ(cpu->Status.bits.N, 1);
+    ASSERT_EQ(cpu->Status.bits.Z, 0);
+  }
+}
+
+
+TEST_F(CPUTest, ClearSetCarry) {
+  exec1opcmd(SEC);
+  ASSERT_EQ(cpu->Status.bits.C, 1);
+  exec1opcmd(CLC);
+  ASSERT_EQ(cpu->Status.bits.C, 0);
+}
+
+TEST_F(CPUTest, AndOrXorBit) {
+  // AND
+  exec2opcmd(LDAI,  0xAA);
+  exec2opcmd(ANDI,  0xFF);
+  ASSERT_EQ(cpu->A, 0xAA);
+  ASSERT_EQ(cpu->Status.bits.N, 1);
+  ASSERT_EQ(cpu->Status.bits.Z, 0);
+
+  exec2opcmd(LDAI,  0xAA);
+  exec2opcmd(ANDI,  0xAA);
+  ASSERT_EQ(cpu->A, 0xAA);
+  ASSERT_EQ(cpu->Status.bits.N, 1);
+  ASSERT_EQ(cpu->Status.bits.Z, 0);
+
+  exec2opcmd(LDAI,  0xAA);
+  exec2opcmd(ANDI,  0x55);
+  ASSERT_EQ(cpu->A, 0x00);
+  ASSERT_EQ(cpu->Status.bits.N, 0);
+  ASSERT_EQ(cpu->Status.bits.Z, 1);
+
+  // OR
+  exec2opcmd(LDAI,  0xAA);
+  exec2opcmd(ORAI,  0x55);
+  ASSERT_EQ(cpu->A, 0xFF);
+  ASSERT_EQ(cpu->Status.bits.N, 1);
+  ASSERT_EQ(cpu->Status.bits.Z, 0);
+
+  exec2opcmd(LDAI,  0xAA);
+  exec2opcmd(ORAI,  0xFF);
+  ASSERT_EQ(cpu->A, 0xFF);
+  ASSERT_EQ(cpu->Status.bits.N, 1);
+  ASSERT_EQ(cpu->Status.bits.Z, 0);
+
+  exec2opcmd(LDAI,  0x00);
+  exec2opcmd(ORAI,  0x00);
+  ASSERT_EQ(cpu->A, 0x00);
+  ASSERT_EQ(cpu->Status.bits.N, 0);
+  ASSERT_EQ(cpu->Status.bits.Z, 1);
+
+  // EOR
+
+  exec2opcmd(LDAI,  0xAA);
+  exec2opcmd(EORI,  0x55);
+  ASSERT_EQ(cpu->A, 0xFF);
+  ASSERT_EQ(cpu->Status.bits.N, 1);
+  ASSERT_EQ(cpu->Status.bits.Z, 0);
+
+  exec2opcmd(LDAI,  0x55);
+  exec2opcmd(EORI,  0x55);
+  ASSERT_EQ(cpu->A, 0x00);
+  ASSERT_EQ(cpu->Status.bits.N, 0);
+  ASSERT_EQ(cpu->Status.bits.Z, 1);
+
+  ASSERT_EQ(0xFF, mem.readByte(0xFF));
+  exec2opcmd(LDAI,  0xFF);
+  exec2opcmd(BITZP, 0xFF);
+  ASSERT_EQ(cpu->Status.bits.N, 1);
+  ASSERT_EQ(cpu->Status.bits.O, 1);
+  ASSERT_EQ(cpu->Status.bits.Z, 0);
+}
+
+TEST_F(CPUTest, AddCarryCarrySet) {
+  //cpu->debugOn();
+  exec1opcmd(CLC);
+  exec2opcmd(LDAI,  255);
+  exec2opcmd(ADCI,  0);
+  ASSERT_EQ(cpu->A, 255);
+  ASSERT_EQ(cpu->Status.bits.C, 0);
+  ASSERT_EQ(cpu->Status.bits.N, 1);
+  ASSERT_EQ(cpu->Status.bits.Z, 0);
+
+  exec1opcmd(CLC);
+  exec2opcmd(LDAI,  255);
+  exec2opcmd(ADCI,  1);
+  ASSERT_EQ(cpu->A, 0);
+  ASSERT_EQ(cpu->Status.bits.C, 1);
+  ASSERT_EQ(cpu->Status.bits.N, 0);
+  ASSERT_EQ(cpu->Status.bits.Z, 1);
+
+  for (int i = 2; i < 0x81; i++) {
+    exec1opcmd(CLC);
+    exec2opcmd(LDAI,  255);
+    exec2opcmd(ADCI,  i);
+    ASSERT_EQ(cpu->A, i - 1);
+    ASSERT_EQ(cpu->Status.bits.C, 1);
+    ASSERT_EQ(cpu->Status.bits.N, 0);
+    ASSERT_EQ(cpu->Status.bits.Z, 0);
+  }
+
+  for (int i = 0x81; i < 0xFF; i++) {
+    exec1opcmd(CLC);
+    exec2opcmd(LDAI,  255);
+    exec2opcmd(ADCI,  i);
+    ASSERT_EQ(cpu->A, i - 1);
+    ASSERT_EQ(cpu->Status.bits.C, 1);
+    ASSERT_EQ(cpu->Status.bits.N, 1);
+    ASSERT_EQ(cpu->Status.bits.Z, 0);
+  }
+}
+
+TEST_F(CPUTest, CompareX) {
+  exec2opcmd(LDXI,  0x01);
+  exec2opcmd(CPXI,  0xFF);
+  ASSERT_EQ(cpu->X, 0x01);
   ASSERT_EQ(cpu->Status.bits.C, 0);
   ASSERT_EQ(cpu->Status.bits.Z, 0);
   ASSERT_EQ(cpu->Status.bits.N, 0);
-}
 
-TEST_F(CPUTest, CMPI_II) {
-  mem.writeByte(0x1000, LDAI);
-  mem.writeByte(0x1001, 0x7F);
-  mem.writeByte(0x1002, CMPI);
-  mem.writeByte(0x1003, 0x80);
-  cpu->PC = 0x1000;
-  uint8_t inst = cpu->getInstruction();
-  ASSERT_EQ(inst, LDAI);
-  cpu->handleInstruction(inst);
-  inst = cpu->getInstruction();
-  ASSERT_EQ(inst, CMPI);
+  exec2opcmd(LDXI,  0x80);
+  exec2opcmd(CPXI,  0x80);
+  ASSERT_EQ(cpu->X, 0x80);
+  ASSERT_EQ(cpu->Status.bits.C, 1);
+  ASSERT_EQ(cpu->Status.bits.Z, 1);
+  ASSERT_EQ(cpu->Status.bits.N, 0);
 
-  cpu->handleInstruction(inst);
-  ASSERT_EQ(cpu->A, 0x7F);
-  ASSERT_EQ(cpu->Status.bits.C, 0);
-  ASSERT_EQ(cpu->Status.bits.Z, 0);
-  ASSERT_EQ(cpu->Status.bits.N, 1);
-}
-
-TEST_F(CPUTest, TestANDI) {
-  mem.writeByte(0x1000, ANDI);
-  mem.writeByte(0x1001, 0xFF);
-  cpu->PC = 0x1000;
-  cpu->A = 0x7F;
-  uint8_t inst = cpu->getInstruction();
-  ASSERT_EQ(inst, ANDI);
-  cpu->handleInstruction(inst);
-  ASSERT_EQ(cpu->A, 0x7F);
+  exec2opcmd(LDXI,  0x80);
+  exec2opcmd(CPXI,  0x01);
+  ASSERT_EQ(cpu->X, 0x80);
+  ASSERT_EQ(cpu->Status.bits.C, 1);
   ASSERT_EQ(cpu->Status.bits.Z, 0);
   ASSERT_EQ(cpu->Status.bits.N, 0);
 
-  mem.writeByte(0x1000, ANDI);
-  mem.writeByte(0x1001, 0xFF);
-  cpu->PC = 0x1000;
-  cpu->A = 0x80;
-  inst = cpu->getInstruction();
-  ASSERT_EQ(inst, ANDI);
-  cpu->handleInstruction(inst);
-  ASSERT_EQ(cpu->A, 0x80);
+
+  exec2opcmd(LDXI,  0x81);
+  exec2opcmd(CPXI,  0x01);
+  ASSERT_EQ(cpu->X, 0x81);
+  ASSERT_EQ(cpu->Status.bits.C, 1);
   ASSERT_EQ(cpu->Status.bits.Z, 0);
   ASSERT_EQ(cpu->Status.bits.N, 1);
-}
-
-TEST_F(CPUTest, JSR) {
-  ASSERT_EQ(cpu->SP, 0x1FF);
-  mem.writeByte(0x1000, JSR);
-  mem.writeByte(0x1001, 0x00);
-  mem.writeByte(0x1002, 0x20);
-  mem.writeByte(0x1003, NOP);
-  mem.writeByte(0x2000, RTS);
-  cpu->PC = 0x1000;
-  uint8_t inst = cpu->getInstruction();
-  ASSERT_EQ(inst, JSR);
-  cpu->handleInstruction(inst);
-  ASSERT_EQ(cpu->SP, 0x1FD);
-  ASSERT_EQ(cpu->PC, 0x2000);
-
-  inst = cpu->getInstruction();
-  ASSERT_EQ(inst, RTS);
-  cpu->handleInstruction(inst);
-  ASSERT_EQ(cpu->SP, 0x1FF);
-  ASSERT_EQ(cpu->PC, 0x1003);
-
-  inst = cpu->getInstruction();
-  ASSERT_EQ(inst, NOP);
-  cpu->handleInstruction(inst);
 }
 
 int main(int argc, char **argv) {

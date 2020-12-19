@@ -50,6 +50,28 @@ std::vector<Snippet>  countdown_y_from_10 {
   }
 };
 
+//
+std::vector<Snippet>  inc_stopif_greatereq {
+  {0x1000, {
+    LDXI,  0xFF,       // max counts
+    STXZP, 0xD0,       // Save FF in D0
+    LDYI,  0x02,       // increment value
+//
+    CLC,
+    STYZP, 0xD1,       // stored in D1
+
+    LDAI,  0x00,
+//LOOP
+    ADCZP, 0xD1,
+    BCC,   (128 + 2 +1), // to LOOP
+    INY,
+    BEQ,  5,
+    JMPA, 0x06, 0x10,
+    NOP }
+  }
+};
+
+
 // Testing the compare (X,Y,A) in modes (I, ZP, A)
 std::vector<Snippet>  compare {
   {0x1000, {
@@ -121,14 +143,14 @@ std::vector<Snippet> fibonacci {
 
 // Why not? If finding primes lets me discover
 // new opcodes and addressing modes, ....
-// From https://rosettacode.org/wiki/Fibonacci_sequence#6502_Assembly
+// From http://rosettacode.org/wiki/Sieve_of_Eratosthenes#6502_Assembly
 // Stores intermediate data from addres 0x2000
 // Final result at address 0x3000
 std::vector<Snippet> sieve_of_eratosthenes {
   {0x1000, {
     LDAI,  0xFF,       // 0x1000: If used as subroutine replace with NOP
 // ERATOS
-    STAZP, 0xD0,       // 0x1002: value of n,
+    STAZP, 0xD0,       // 0x1002: value of n (255)
     LDAI,  0x00,       // 0x1004
     LDXI,  0x00,       // 0x1006
 // SETUP
@@ -136,7 +158,7 @@ std::vector<Snippet> sieve_of_eratosthenes {
     ADCI,  0x01,       // 0x100B
     INX,               // 0x100D
     CPXZP, 0xD0,       // 0x100E
-    BPL,   5,          // 0x1010: to label SET
+    BEQ,   5,          // 0x1010: to label SET
     JMPA,  0x08, 0x10, // 0x1012: to label SETUP (0x1008)
 // SET
     LDXI,  0x02,       // 0x1015:
@@ -144,7 +166,7 @@ std::vector<Snippet> sieve_of_eratosthenes {
     LDAAX, 0x00, 0x20, // 0x1017: find non-zero
     INX,               // 0x101A
     CPXZP, 0xD0,       // 0x101B
-    BPL,   0x19,       // 0x101D: to label SIEVED
+    BEQ,   0x19,       // 0x101D: to label SIEVED
     CMPI,  0x00,       // 0x101F
     BEQ,   (128+10+1), // 0x1021 to label SIEVE (-11)
     STAZP, 0xD1,       // 0x1023: current prime
@@ -156,7 +178,7 @@ std::vector<Snippet> sieve_of_eratosthenes {
     STAAY, 0x00, 0x20, // 0x102B: addr 0x2000
     TYA,               // 0x102E
     CMPZP, 0xD0,       // 0x102F
-    BPL,   (128+26+1), // 0x1031: to label SIEVE
+    BEQ,   (128+26+1), // 0x1031: to label SIEVE
     JMPA,  0x25, 0x10, // 0x1033: to label MARK
 // SIEVED
     LDXI,  0x01,       // 0x1036

@@ -26,15 +26,22 @@ int main(int argc, char * argv[])
   //mem.loadSnippets(countdown_y_from_10);
   //mem.loadSnippets(compare);
   //mem.loadSnippets(add_two_16_bit_numbers);
-  mem.loadSnippets(fibonacci);
+  //mem.loadSnippets(fibonacci);
+  mem.loadSnippets(inc_stopif_greatereq);
+
   //mem.loadSnippets(sieve_of_eratosthenes);
 
   cpu.reset();
   cpu.debugOn();
-  cpu.run(1000);
+  //cpu.setBreakpointAddr(0x1023);
+  cpu.run(-1);
 
   //mem.dump(0x20, 6); // for add_two_16_bit_numbers
-  mem.dump(0x00F0, 3); // for fibonacci
-  mem.dump(0x2000, 16); // for fibonacci
+  //mem.dump(0x00F0, 3); // for fibonacci
+  //mem.dump(0x2000, 16); // for fibonacci
+  // mem.dump(0x2000, 16); // for sieve
+  // mem.dump(0x20F0, 16); // for sieve
+  // mem.dump(0x3000, 16); // for sieve
+  // mem.dump(0x30F0, 16); // for sieve
   return 0;
 }

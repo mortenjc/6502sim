@@ -9,13 +9,17 @@
 
 #pragma once
 
+#define ORAI  0x09
 #define BPL   0x10
 #define CLC   0x18
 #define JSR   0x20
 
+#define BITZP 0x24
 #define ANDI  0x29
+#define BITA  0x2C
 #define BMI   0x30
 #define SEC   0x38
+#define EORI  0x49
 #define JMPA  0x4C
 
 #define RTS   0x60
@@ -23,11 +27,16 @@
 #define ADCI  0x69
 #define ADCA  0x6D
 
+#define STYZP 0x84
 #define STAZP 0x85
 #define STXZP 0x86
 #define DEY   0x88
+#define TXA   0x8A
 #define STYA  0x8C
 #define STXA  0x8E
+#define BCC   0x90
+#define STYZX 0x94
+#define STXZY 0x96
 #define TYA   0x98
 #define STAAY 0x99
 #define STAAX 0x9D
@@ -39,9 +48,17 @@
 #define LDXZP 0xA6
 #define TAY   0xA8
 #define LDAI  0xA9
+#define TAX   0xAA
+#define LDYA  0xAC
+#define LDAA  0xAD
+#define LDXA  0xAE
+#define LDYZX 0xB4
+#define LDAZX 0xB5
+#define LDXZY 0xB6
 #define LDAAY 0xB9
 #define LDYAX 0xBC
 #define LDAAX 0xBD
+#define LDXAY 0xBE
 
 #define CPYI  0xC0
 #define CPYZP 0xC4
