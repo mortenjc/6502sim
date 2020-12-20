@@ -117,6 +117,11 @@ std::vector<Snippet> add_two_16_bit_numbers {
 };
 
 
+//
+// 'real' programs below
+//
+
+
 // From https://rosettacode.org/wiki/Fibonacci_sequence#6502_Assembly
 // stores data at 0x2000
 std::vector<Snippet> fibonacci {
@@ -141,112 +146,26 @@ std::vector<Snippet> fibonacci {
 };
 
 
-// Why not? If finding primes lets me discover
-// new opcodes and addressing modes, ....
-// From http://rosettacode.org/wiki/Sieve_of_Eratosthenes#6502_Assembly
-// Stores intermediate data from addres 0x2000
-// Final result at address 0x3000
-std::vector<Snippet> sieve_of_eratosthenes {
-  {0x1000, {
-    LDAI,  0xFF,       // 0x1000: If used as subroutine replace with NOP
-// ERATOS
-    STAZP, 0xD0,       // 0x1002: value of n (255)
-    LDAI,  0x00,       // 0x1004
-    LDXI,  0x00,       // 0x1006
-// SETUP
-    STAAX, 0x00, 0x20, // 0x1008: populate array
-    ADCI,  0x01,       // 0x100B
-    INX,               // 0x100D
-    CPXZP, 0xD0,       // 0x100E
-    BEQ,   5,          // 0x1010: to label SET
-    JMPA,  0x08, 0x10, // 0x1012: to label SETUP (0x1008)
-// SET
-    LDXI,  0x02,       // 0x1015:
-// SIEVE
-    LDAAX, 0x00, 0x20, // 0x1017: find non-zero
-    INX,               // 0x101A
-    CPXZP, 0xD0,       // 0x101B
-    BEQ,   0x19,       // 0x101D: to label SIEVED
-    CMPI,  0x00,       // 0x101F
-    BEQ,   (128+10+1), // 0x1021 to label SIEVE (-11)
-    STAZP, 0xD1,       // 0x1023: current prime
-// MARK
-    CLC,               // 0x1025
-    ADCZP, 0xD1,       // 0x1026
-    TAY,               // 0x1028
-    LDAI,  0x00,       // 0x1029
-    STAAY, 0x00, 0x20, // 0x102B: addr 0x2000
-    TYA,               // 0x102E
-    CMPZP, 0xD0,       // 0x102F
-    BEQ,   (128+26+1), // 0x1031: to label SIEVE
-    JMPA,  0x25, 0x10, // 0x1033: to label MARK
-// SIEVED
-    LDXI,  0x01,       // 0x1036
-    LDYI,  0x00,       // 0x1038
-// COPY
-    INX,               // 0x103A
-    CPXZP, 0xD0,       // 0x103B
-    BPL,     16,       // 0x103D: to label COPIED
-    LDAAX, 0x00, 0x20, // 0x103F: 0x2000
-    CMPI,  0x00,       // 0x1042
-    BEQ,   (128 + 10 + 1), // 0x1044 to label COPY
-    STAAY, 0x00, 0x30, // 0x1046: val 0x3000
-    INY,               // 0x1049
-    JMPA, 0x3A, 0x10,  // 0x104A: to label COPY
-// COPIED
-    TYA,               // 0x104C: how many found
-    NOP }              // was RTS
-  }
-};
 
-
+// From: http://www.6502.org/source/misc/dow.htm
+//
 // * This routine works for any date from 1900-03-01 to 2155-12-31.
 // * No range checking is done, so validate input before calling.
-// *
-// * I use the formula
-// *     Weekday = (day + offset[month] + year + year/4 + fudge) mod 7
-// * where the value of fudge depends on the century.
-// *
 // * Input: Y = year (0=1900, 1=1901, ..., 255=2155)
 // *        X = month (1=Jan, 2=Feb, ..., 12=Dec)
 // *        A = day (1 to 31)
 // *
 // * Output: Weekday in A (0=Sunday, 1=Monday, ..., 6=Saturday)
 //
-// TMP      EQU $6          ; Temporary storage
-//
-// WEEKDAY:
-//          CPX #3          ; Year starts in March to bypass
-//          BCS MARCH       ; leap year problem
-//          DEY             ; If Jan or Feb, decrement year
-// MARCH    EOR #$7F        ; Invert A so carry works right
-//          CPY #200        ; Carry will be 1 if 22nd century
-//          ADC MTAB-1,X    ; A is now day+month offset
-//          STA TMP
-//          TYA             ; Get the year
-//          JSR MOD7        ; Do a modulo to prevent overflow
-//          SBC TMP         ; Combine with day+month
-//          STA TMP
-//          TYA             ; Get the year again
-//          LSR             ; Divide it by 4
-//          LSR
-//          CLC             ; Add it to y+m+d and fall through
-//          ADC TMP
-// MOD7     ADC #7          ; Returns (A+3) modulo 7
-//          BCC MOD7        ; for A in 0..255
-//          RTS
-// MTAB     DB 1,5,6,3,1,5,3,0,4,2,6,4   	; Month offsets
-
-
+// Check against: https://www.wolframalpha.com/input/?i=day+of+week+1967+May+2
 std::vector<Snippet> weekday {
-  // Data: two 16-bit numbers loaded at address 0x20
+  // Data
   {0x20, {
             6,                         // TMP @ 0x20
             1,5,6,3,1,5,3,0,4,2,6,4    // DB  @ 0x21
   }},
 
    // Main program - load Y, X, A and call Weekday routine
-
    // I seem to get an off by one on this compared to:
    // 2 may 1967 - tuesday (2)
    // 20 december 2020 - sunday (0)
@@ -258,31 +177,32 @@ std::vector<Snippet> weekday {
             NOP,
   }},
 
-  // Weekday subroutine
+  // Weekday() subroutine
   {0x1500, {
-            CPXI, 3,        // Year starts in March to bypass
-            BCS, 3,          // to MARCH       ; leap year problem
+            CPXI, 3,         // Year starts in March to bypass
+            BCS, 3,          // to lbl MARCH - leap year problem
             DEY,             // If Jan or Feb, decrement year
-/* MARCH */ EORI, 0x7F,     // Invert A so carry works right
+/* MARCH */ EORI, 0x7F,      // Invert A so carry works right
             CPYI, 200,       // Carry will be 1 if 22nd century
             ADCZX, 0x20,     // A is now day+month offset
-            STAZP, 0x20,     // TMP
+            STAZP, 0x20,     // TMP is @ 0x20
             TYA,             // Get the year
-            JSR, 0x00, 0x20, // Subrouting MOD7        ; Do a modulo to prevent overflow
-            SBCZP, 0x20,     //TMP ; Combine with day+month
-            STAZP, 0x20,     //TMP
+            JSR, 0x00, 0x20, // MOD7() @ 0x2000 - Do a modulo to prevent overflow
+            SBCZP, 0x20,     // TMP - Combine with day+month
+            STAZP, 0x20,     // TMP
             TYA,             // Get the year again
             LSR,             // Divide it by 4
             LSR,
             CLC,             // Add it to y+m+d and fall through
             ADCZP, 0x20,
-            JSR, 0x00, 0x20,
+            JSR, 0x00, 0x20, // MOD7() @ 0x2000
             RTS,
   }},
 
-  {0x2000, { // Subroutine MOD7
-            ADCI, 7,        // Returns (A+3) modulo 7
-            BCC, 128+2+1,   // MOD7        ; for A in 0..255
+  // MOD7() subroutine
+  {0x2000, {
+            ADCI, 7,         // Returns (A+3) modulo 7
+            BCC, 128+2+1,    // MOD7        ; for A in 0..255
             RTS
   }}
 };

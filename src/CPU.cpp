@@ -89,7 +89,7 @@ void CPU::disAssemble(Opcode opc, uint8_t byte, uint16_t word) {
     break;
 
     case ZeroPageX:
-      printf("$%02X,X(%d)  ", byte, X);
+      printf("$%02X,X(%3d)  ", byte, X);
       break;
 
     case ZeroPageY:
