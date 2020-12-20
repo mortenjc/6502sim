@@ -27,9 +27,9 @@ int main(int argc, char * argv[])
   //mem.loadSnippets(compare);
   //mem.loadSnippets(add_two_16_bit_numbers);
   //mem.loadSnippets(fibonacci);
-  mem.loadSnippets(inc_stopif_greatereq);
-
+  //mem.loadSnippets(inc_stopif_greatereq);
   //mem.loadSnippets(sieve_of_eratosthenes);
+  mem.loadSnippets(weekday);
 
   cpu.reset();
   cpu.debugOn();

@@ -299,6 +299,8 @@ bool CPU::handleInstruction(uint8_t opcode) {
 
     //
     // Add/Subtract
+
+    // Add
     case ADCI: // Add with carry Imm
       addcarry(A, byte);
       break;
@@ -307,8 +309,45 @@ bool CPU::handleInstruction(uint8_t opcode) {
       addcarry(A, mem.readByte(byte));
     break;
 
+    case ADCZX: //Add wih carry - ZP,X
+      addcarry(A, mem.readByte(byte + X));
+    break;
+
     case ADCA: // Add with carry - Absolute
       addcarry(A, mem.readByte(word));
+      break;
+
+    case ADCAX: // Add with carry - Absolute,X
+      addcarry(A, mem.readByte(word + X));
+      break;
+
+    case ADCAY: // Add with carry - Absolute,Y
+      addcarry(A, mem.readByte(word + Y));
+      break;
+
+    // Subtract
+    case SBCI: // Subtract with carry - Imm
+      subcarry(A, byte);
+      break;
+
+    case SBCZP: // Subtract with carry - ZP
+      subcarry(A, mem.readByte(byte));
+      break;
+
+    case SBCZX: // Subtract with carry - ZP,X
+      subcarry(A, mem.readByte(byte + X));
+      break;
+
+    case SBCA: // Subtract with carry - Absolute
+      subcarry(A, mem.readByte(word));
+      break;
+
+    case SBCAX: // Subtract with carry - Absolute,X
+      subcarry(A, mem.readByte(word + X));
+      break;
+
+    case SBCAY: // Subtract with carry - Absolute,Y
+      subcarry(A, mem.readByte(word + Y));
       break;
 
 
@@ -410,6 +449,12 @@ bool CPU::handleInstruction(uint8_t opcode) {
       }
     break;
 
+    case BCS: // Branch if carry set
+      if (Status.bits.C == 1) {
+        pcinc = jumpRelative(byte);
+      }
+    break;
+
     case JSR:
         S -= 2;
         mem.writeWord(getSPAddr(), (PC + 2));
@@ -464,6 +509,13 @@ bool CPU::handleInstruction(uint8_t opcode) {
       Status.bits.O = (M & 0x40) >> 6;
     }
     break;
+
+    // Shifts
+    case LSR:
+      Status.bits.C = A & 0x01;
+      A = A >> 1;
+      updateStatus(A);
+      break;
 
 
     //

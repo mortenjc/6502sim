@@ -20,6 +20,7 @@
 #define BMI   0x30
 #define SEC   0x38
 #define EORI  0x49
+#define LSR   0x4A
 #define JMPA  0x4C
 
 #define RTS   0x60
@@ -27,6 +28,9 @@
 #define ADCI  0x69
 #define ADCA  0x6D
 
+#define ADCZX 0x75
+#define ADCAY 0x79
+#define ADCAX 0x7D
 #define STYZP 0x84
 #define STAZP 0x85
 #define STXZP 0x86
@@ -52,6 +56,7 @@
 #define LDYA  0xAC
 #define LDAA  0xAD
 #define LDXA  0xAE
+#define BCS   0xB0
 #define LDYZX 0xB4
 #define LDAZX 0xB5
 #define LDXZY 0xB6
@@ -72,10 +77,16 @@
 #define CLD   0xD8
 #define CPXI  0xE0
 #define CPXZP 0xE4
+#define SBCZP 0xE5
 #define INX   0xE8
+#define SBCI  0xE9
+#define SBCA  0xED
 #define INCA  0xEE
 #define NOP   0xEA
 #define CPXA  0xEC
 
 #define BEQ   0xF0
+#define SBCZX 0xF5
 #define SED   0xF8
+#define SBCAY 0xF9
+#define SBCAX 0xFD
