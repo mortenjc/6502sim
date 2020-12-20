@@ -5,22 +5,25 @@ PROGS = bin/sim6502 bin/cputest bin/branchtest
 CFLAGS = -I src --std=c++11
 TESTFLAGS = -I googletest/googletest/include/ -L googletest/build/lib -lgtest
 
+COMMONINC = src/CPU.h  src/Programs.h src/Memory.h src/Opcodes.h
+COMMONSRC = src/CPU.cpp src/CPUInstructions.cpp src/CPUHelpers.cpp
+
 all: $(PROGS)
 
 gtest:
 	./scripts/makegtest
 
 
-bin/sim6502: src/sim6502.cpp src/CPU.h src/CPU.cpp src/CPUHelpers.cpp src/Programs.h src/Memory.h src/Opcodes.h
-	g++ $(CFLAGS) src/sim6502.cpp src/CPU.cpp src/CPUHelpers.cpp  -o $@
+bin/sim6502: src/sim6502.cpp $(COMMONSRC) $(COMMONINC)
+	g++ $(CFLAGS) src/sim6502.cpp $(COMMONSRC) -o $@
 
 
 # Tests
-bin/cputest: test/CPUTest.cpp src/CPU.cpp src/CPUHelpers.cpp  src/CPU.h src/Memory.h
-	g++ $(CFLAGS) $(TESTFLAGS) test/CPUTest.cpp src/CPU.cpp src/CPUHelpers.cpp   -o $@
+bin/cputest: test/CPUTest.cpp $(COMMONSRC) $(COMMONINC)
+	g++ $(CFLAGS) $(TESTFLAGS) test/CPUTest.cpp $(COMMONSRC) -o $@
 
-bin/branchtest: test/BranchJumpTest.cpp src/CPU.cpp src/CPUHelpers.cpp  src/CPU.h src/Memory.h
-	g++ $(CFLAGS) $(TESTFLAGS) test/BranchJumpTest.cpp src/CPU.cpp src/CPUHelpers.cpp   -o $@
+bin/branchtest: test/BranchJumpTest.cpp $(COMMONSRC) $(COMMONINC)
+	g++ $(CFLAGS) $(TESTFLAGS) test/BranchJumpTest.cpp $(COMMONSRC) -o $@
 
 
 clean:
