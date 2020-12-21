@@ -35,6 +35,7 @@ bin/ldatest: test/LDATest.cpp $(COMMONSRC) $(COMMONINC) test/TestBase.h
 runtest: test
 	./bin/cputest
 	./bin/branchtest
+	./bin/ldatest
 
 
 # Clean up

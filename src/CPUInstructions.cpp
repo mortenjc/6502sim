@@ -80,18 +80,14 @@ bool CPU::handleInstruction(uint8_t opcode) {
       Opc.pf(this, A);
       break;
 
-    case LDAIXID: { // Indexed, Indirect ?
-        uint8_t zpaddr = mem.readByte(byte + X);
-        A = mem.readByte(zpaddr);
-        Opc.pf(this, A);
-      }
+    case LDAIXID: // Indexed, Indirect ?
+      A = mem.readByte(mem.readWord(byte + X));
+      Opc.pf(this, A);
       break;
 
-    case LDAIDIX: { // Indirect, Indexed ?
-        uint8_t zpaddr = mem.readByte(byte);
-        A = mem.readByte(zpaddr + Y);
-        Opc.pf(this, A);
-      }
+    case LDAIDIX: // Indirect, Indexed ?
+      A = mem.readByte(mem.readWord(byte) + Y);
+      Opc.pf(this, A);
       break;
 
     case STAZP:

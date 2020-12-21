@@ -90,42 +90,37 @@ void CPU::disAssemble(uint16_t addr, Opcode opc, uint8_t byte, uint8_t byte2, ui
 
   switch (opc.mode) {
     case IndexedIndirect:
-    case IndirectIndexed:
+      printf("($%02X,X)     ", byte);
       break;
-
+    case IndirectIndexed:
+      printf("($%02X),Y     ", byte);
+      break;
     case Implied:
       printf("            ");
       break;
-
     case Accumulator:
       printf("A           ");
       break;
-
     case Relative: {
       int delta = (byte & 0x80) ? -(256 - byte) : (byte);
       uint16_t addr = PC + delta;
       printf("%04X (%4d) ", addr, delta);
     }
     break;
-
     case ZeroPage: {
       uint8_t val = mem.readByte(byte);
       printf("$%02X(%3d)    ", byte, val);
     }
     break;
-
     case ZeroPageX:
       printf("$%02X,X(%3d)  ", byte, X);
       break;
-
     case ZeroPageY:
       printf("$%02X,Y(%d)  ", byte, Y);
       break;
-
     case Immediate:
       printf("#$%02X        ", byte);
       break;
-
     case Absolute:
       printf("$%04X       ", word);
       break;
@@ -143,16 +138,13 @@ void CPU::disAssemble(uint16_t addr, Opcode opc, uint8_t byte, uint8_t byte2, ui
 
 int CPU::operands(AMode mode) {
   switch (mode) {
-    case IndexedIndirect:
-    case IndirectIndexed:
-      return 0;
-      break;
-
     case Implied:
     case Accumulator:
       return 1;
       break;
 
+    case IndexedIndirect:
+    case IndirectIndexed:
     case Relative:
     case ZeroPage:
     case ZeroPageX:
