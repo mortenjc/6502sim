@@ -7,60 +7,9 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#include <gtest/gtest.h>
-#include <Memory.h>
-#include <CPU.h>
-#include <Opcodes.h>
+#include <TestBase.h>
 
-class CPUTest: public ::testing::Test {
-protected:
-  Memory mem;
-  CPU * cpu;
-
-  void exec1opcmd(uint8_t opcode) {
-    mem.writeByte(0x1000, opcode);
-    cpu->PC = 0x1000;
-    uint8_t inst = cpu->getInstruction();
-    ASSERT_EQ(inst, opcode);
-    bool running = cpu->handleInstruction(inst);
-    ASSERT_TRUE(running);
-  }
-
-  void exec2opcmd(uint8_t opcode, uint8_t val) {
-    mem.writeByte(0x1000, opcode);
-    mem.writeByte(0x1001, val);
-    cpu->PC = 0x1000;
-    uint8_t inst = cpu->getInstruction();
-    ASSERT_EQ(inst, opcode);
-    bool running = cpu->handleInstruction(inst);
-    ASSERT_TRUE(running);
-  }
-
-  void exec3opcmd(uint8_t opcode, uint8_t lo, uint8_t hi) {
-    mem.writeByte(0x1000, opcode);
-    mem.writeByte(0x1001, lo);
-    mem.writeByte(0x1002, hi);
-    cpu->PC = 0x1000;
-    uint8_t inst = cpu->getInstruction();
-    ASSERT_EQ(inst, opcode);
-    bool running = cpu->handleInstruction(inst);
-    ASSERT_TRUE(running);
-  }
-
-
-  void SetUp( ) {
-    mem.reset();
-    for (int i = 0; i < 256; i++) {
-     mem.writeByte(i, i);         // ZP  : 0, 1, 2, 3, 4
-     mem.writeByte(0x2000 + i, i);  // 2000: 0, 1, 2, 3, 4
-    }
-    cpu = new CPU(mem);
-    cpu->reset();
-  }
-
-  void TearDown( ) { }
-};
-
+class CPUTest: public TestBase { };
 
 // Test that popping from top of stack wraps to bottom
 TEST_F(CPUTest, ReturnSubroutine) {

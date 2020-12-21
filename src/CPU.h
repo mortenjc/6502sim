@@ -233,6 +233,7 @@ private:
     {STAAX, "STA", AbsoluteX, na},
 
     {LDYI,  "LDY", Immediate, load},
+    {LDAIXID, "LDA", IndexedIndirect, load}, 
     {LDXI,  "LDX", Immediate, load},
     {LDYZP, "LDY", ZeroPage,  load},
     {LDAZP, "LDA", ZeroPage,  load},
@@ -245,6 +246,7 @@ private:
     {LDXA,  "LDX", Absolute,  load},
 
     {BCS,   "BCS", Relative,  load},
+    {LDAIDIX, "LDA", IndirectIndexed, load},
     {LDYZX, "LDY", ZeroPageX, load},
     {LDAZX, "LDA", ZeroPageX, load},
     {LDXZY, "LDX", ZeroPageY, load},
