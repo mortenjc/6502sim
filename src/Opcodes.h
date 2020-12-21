@@ -50,6 +50,7 @@ int (*pf)(CPU * cpu, uint8_t & reg);
 #define ADCZP 0x65
 #define PLA   0x68
 #define ADCI  0x69
+#define JMPI  0x6C
 #define ADCA  0x6D
 
 #define ADCZX 0x75

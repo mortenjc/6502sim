@@ -136,6 +136,7 @@ void CPU::disAssemble(uint16_t addr, Opcode opc, uint8_t byte, uint8_t byte2, ui
       printf("$%04X,Y(%3d)", word, Y);
       break;
     case Indirect:
+      printf("($%04X)     ", word);
       break;
   }
 }

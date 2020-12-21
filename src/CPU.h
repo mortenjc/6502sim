@@ -209,6 +209,7 @@ private:
     {ADCZP, "ADC", ZeroPage,  na},
     {PLA,   "PLA", Implied,   na},
     {ADCI,  "ADC", Immediate, na},
+    {JMPI,  "JMP", Indirect,  na},
     {ADCA,  "ADC", Absolute,  na},
 
     {ADCZX, "ADC", ZeroPageX, na},

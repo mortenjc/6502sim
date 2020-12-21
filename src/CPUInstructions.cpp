@@ -327,19 +327,25 @@ bool CPU::handleInstruction(uint8_t opcode) {
       }
     break;
 
+
+    /// Group: Jumps & Calls (Complete)
     case JSR:
         S -= 2;
         mem.writeWord(getSPAddr(), PC);
         PC = word;
+        break;
+
+    case JMPA: // Jump absolute
+      PC = word;
       break;
 
-    case JMPA: { //
-      PC = mem.readWord(word);
-    }
-    break;
+    case JMPI: { // Jump indirect
+        PC = mem.readWord(word);
+      }
+      break;
 
     case RTS:
-      PC = mem.readWord(0x100 + S);
+      PC = mem.readWord(getSPAddr());
       S += 2;
       break;
 
