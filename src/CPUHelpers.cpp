@@ -16,7 +16,7 @@
 int16_t CPU::jumpRelative(uint8_t val) {
   int16_t jump;
   if (val & 0x80) {
-    jump = - (val - 0x80) + 1;
+    jump = - (256 - val); 
   } else {
     jump = val;
   }
@@ -25,17 +25,21 @@ int16_t CPU::jumpRelative(uint8_t val) {
 
 
 int CPU::addcarry(uint8_t & reg, uint8_t val) {
-  // Actual addcarry routine
-  uint8_t tmp = reg + val + Status.bits.C;
+  Status.bits.O = 0; // Clear overflow
+  Status.bits.C = 0; // Clear carry
 
-  if ((reg + val + Status.bits.C) > 255) {
+  unsigned int tmp = reg + val + Status.bits.C;
+
+  if (tmp > 255) {
     Status.bits.C = 1; // Set carry
-  } else {
-    Status.bits.C = 0; // Clear carry
   }
 
-  reg = tmp;
-  updateStatus(reg);
+ if (!((reg ^ val) & 0x80) && ((reg ^ tmp) & 0x80)) {
+   Status.bits.O = 1;
+ }
+
+  reg = tmp & 0xFF;
+  updateStatusZN(reg);
 
   return 0;
 }
@@ -43,7 +47,7 @@ int CPU::addcarry(uint8_t & reg, uint8_t val) {
 int CPU::subcarry(uint8_t & unused, uint8_t M) {
   Status.bits.O = 0;
   Status.bits.C = 0;
-  // Actual addcarry routine
+
   unsigned int tmp = A - M - (Status.bits.C ^ 1);
 
   if (((A ^ tmp) & 0x80) && ((A ^ M) & 0x80)) {
@@ -55,6 +59,6 @@ int CPU::subcarry(uint8_t & unused, uint8_t M) {
   }
 
   A = (tmp & 0xFF);
-  updateStatus(A);
+  updateStatusZN(A);
   return 0;
 }

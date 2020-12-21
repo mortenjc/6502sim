@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <Macros.h>
 #include <Memory.h>
 #include <Opcodes.h>
 
@@ -173,14 +174,14 @@ std::vector<Snippet> weekday {
             LDYI, (1967 - 1900), // 2020   (2020 - 1900)
             LDXI,  5,            // Month
             LDAI,  2,            // Day
-            JSR,  0x00, 0x15,    //
+            JSR,  0x00, 0x15,    // to weekday()
             NOP,
   }},
 
   // Weekday() subroutine
   {0x1500, {
             CPXI, 3,         // Year starts in March to bypass
-            BCS, 3,          // to lbl MARCH - leap year problem
+            BCS, 1,          // to lbl MARCH - leap year problem
             DEY,             // If Jan or Feb, decrement year
 /* MARCH */ EORI, 0x7F,      // Invert A so carry works right
             CPYI, 200,       // Carry will be 1 if 22nd century
@@ -202,7 +203,7 @@ std::vector<Snippet> weekday {
   // MOD7() subroutine
   {0x2000, {
             ADCI, 7,         // Returns (A+3) modulo 7
-            BCC, 128+2+1,    // MOD7        ; for A in 0..255
+            BCC, (256-4),    // MOD7        ; for A in 0..255
             RTS
   }}
 };

@@ -20,18 +20,16 @@
 #include <Memory.h>
 
 bool CPU::handleInstruction(uint8_t opcode) {
-  int16_t pcinc {1};
+  uint16_t addr = PC;
   uint8_t byte = mem.readByte(PC + 1);
+  uint8_t byte2 = mem.readByte(PC + 2);
   uint16_t word = mem.readWord(PC + 1);
-
   auto & Opc = instset[opcode];
 
-  disAssemble(Opc, byte, word);
-
-  pcinc = operands(Opc.mode); // Works for all but jump instructions?
+  disAssemble(addr, Opc, byte, byte2, word);
+  PC += operands(Opc.mode); // Works for all but jump instructions?
 
   switch (Opc.opcode) {
-
     //
     // Set/Clear flags
     case CLC: // CLC - CLear Carry
@@ -247,7 +245,7 @@ bool CPU::handleInstruction(uint8_t opcode) {
       uint8_t val = mem.readByte(word);
       val++;
       mem.writeByte(word, val);
-      updateStatus(val);
+      updateStatusZN(val);
     }
     break;
 
@@ -295,57 +293,54 @@ bool CPU::handleInstruction(uint8_t opcode) {
     // Branch/Jump/Return
     case BNE: // Branch if not Zero
       if (Status.bits.Z == 0) {
-        pcinc = jumpRelative(byte);
+        PC += jumpRelative(byte);
       }
       break;
 
     case BEQ: // Branch if Zero
       if (Status.bits.Z == 1) {
-        pcinc = jumpRelative(byte);
+        PC += jumpRelative(byte);
       }
       break;
 
     case BPL: // Branch if positive
       if (Status.bits.N == 0) {
-        pcinc = jumpRelative(byte);
+        PC += jumpRelative(byte);
       }
       break;
 
     case BMI: // Branch if negative
       if (Status.bits.N == 1) {
-        pcinc = jumpRelative(byte);
+        PC += jumpRelative(byte);
       }
     break;
 
     case BCC: // Branch if carry clear
       if (Status.bits.C == 0) {
-        pcinc = jumpRelative(byte);
+        PC += jumpRelative(byte);
       }
     break;
 
     case BCS: // Branch if carry set
       if (Status.bits.C == 1) {
-        pcinc = jumpRelative(byte);
+        PC += jumpRelative(byte);
       }
     break;
 
     case JSR:
         S -= 2;
-        mem.writeWord(getSPAddr(), (PC + 2));
+        mem.writeWord(getSPAddr(), PC);
         PC = word;
-        pcinc = 0;
       break;
 
     case JMPA: { //
-      PC = mem.readWord(PC + 1);
-      pcinc = 0;
+      PC = mem.readWord(word);
     }
     break;
 
     case RTS:
-      PC = mem.readWord(0x100 + S) + 1;
+      PC = mem.readWord(0x100 + S);
       S += 2;
-      pcinc = 0;
       break;
 
 
@@ -353,23 +348,23 @@ bool CPU::handleInstruction(uint8_t opcode) {
     // Logical
     case ANDI:
       A = A & byte;
-      updateStatus(A);
+      updateStatusZN(A);
       break;
 
     case ORAI:
       A = A | byte;
-      updateStatus(A);
+      updateStatusZN(A);
       break;
 
     case EORI:
       A = A ^ byte;
-      updateStatus(A);
+      updateStatusZN(A);
       break;
 
     case BITZP: {
       uint8_t M = mem.readByte(byte);
       uint8_t test = A & M;
-      updateStatus(test);
+      updateStatusZN(test);
       Status.bits.N = (M & 0x80) >> 7;
       Status.bits.O = (M & 0x40) >> 6;
     }
@@ -378,7 +373,7 @@ bool CPU::handleInstruction(uint8_t opcode) {
     case BITA: {
       uint8_t M = mem.readByte(word);
       uint8_t test = A & M;
-      updateStatus(test);
+      updateStatusZN(test);
       Status.bits.N = (M & 0x80) >> 7;
       Status.bits.O = (M & 0x40) >> 6;
     }
@@ -388,7 +383,7 @@ bool CPU::handleInstruction(uint8_t opcode) {
     case LSR:
       Status.bits.C = A & 0x01;
       A = A >> 1;
-      updateStatus(A);
+      updateStatusZN(A);
       break;
 
 
@@ -410,6 +405,37 @@ bool CPU::handleInstruction(uint8_t opcode) {
       transfer(X, A);
       break;
 
+    // Stack operations
+    case TSX: // Transfer Stack Pointer to X
+      X = S;
+      updateStatusZN(X);
+      break;
+
+    case TXS: // Transfer X to Stack Pointer
+      S = X;
+      break;
+
+    case PHA:
+      S--;
+      mem.writeByte(getSPAddr(), A);
+      break;
+
+    case PHP:
+      S--;
+      mem.writeByte(getSPAddr(), Status.mask);
+      break;
+
+    case PLA:
+      A = mem.readByte(getSPAddr());
+      S++;
+      updateStatusZN(A);
+      break;
+
+    case PLP:
+      Status.mask = mem.readByte(getSPAddr());
+      S++;
+      break;
+
 
     //
 
@@ -429,9 +455,7 @@ bool CPU::handleInstruction(uint8_t opcode) {
       break;
   }
 
-  PC += pcinc;
-
-  debug();
+  printRegisters();
 
   return running;
 }

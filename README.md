@@ -1,12 +1,14 @@
 # 6502sim
 A 6502 CPU simulator project
 
-So far only a subset of the opcodes are implemented (see Opcodes.h) but
-some loads, stores, increments, decrements, set and clear flags, and branches
-are supported. All three jumps (JSR, JMP, RTS) are implemented.
+So far only a subset (~80) of the opcodes are implemented (see Opcodes.h).
+The simulator has support for jumps and branches, loads and stores,
+increment and decrement, add and subtract with carry, set and clear flags,
+stack push operations, register transfer, logial operators and more.
 
-There is support for loading code (memory.h and si6502.cpp) and google
-test.
+There is support for loading code into memory before execution (Memory.h and
+sim6502.cpp) and google test.
+
 
 ## Building
 Building the unit tests for the simulator requires google test.
@@ -16,4 +18,4 @@ Building the unit tests for the simulator requires google test.
 
 ## Unit tests
 
-    ./cputest
+    make runtest

@@ -20,6 +20,18 @@
 #include <CPU.h>
 #include <Opcodes.h>
 
+
+CPU::CPU(Memory & memory) : mem(memory) {
+  for (int i = 0; i < 256; i++) {
+    instset[i] = {0xFF, "---", Implied};
+  }
+  for (auto & opc : Opcodes) {
+    assert(instset[opc.opcode].opcode == 0xFF);
+    instset[opc.opcode] = opc;
+  }
+  reset();
+};
+
 // Sets registers and flags to zero
 // Sets Stack pointer (SP) to default (0x1FF)
 // Sets program counter (PC) to value read from memory
@@ -30,8 +42,22 @@ void CPU::reset() {
   S = 0xFF; // SP = SPBase + S
 }
 
+
+void CPU::run(unsigned int n) {
+  while (running and (n > 0)) {
+    uint8_t instruction = getInstruction();
+    handleInstruction(instruction);
+    n--;
+
+    if (bpCheck()) {
+      printf("<< BREAK >>\n");
+      return;
+    }
+  }
+}
+
 // Prints PC, SP, registers and flags
-void CPU::debug() {
+void CPU::printRegisters() {
   if (not debugPrint)
     return;
 
@@ -47,17 +73,17 @@ void CPU::debug() {
 }
 
 // Make a disassembler-like listing of the current command
-void CPU::disAssemble(Opcode opc, uint8_t byte, uint16_t word) {
+void CPU::disAssemble(uint16_t addr, Opcode opc, uint8_t byte, uint8_t byte2, uint16_t word) {
   if (not debugPrint)
     return;
 
   int nbops = operands(opc.mode);
   if (nbops == 1) {
-    printf("%04x %02x       ", PC, opc.opcode);
+    printf("%04x %02x       ", addr, opc.opcode);
   } else if (nbops == 2) {
-    printf("%04x %02x %02x    ", PC, opc.opcode, byte);
+    printf("%04x %02x %02x    ", addr, opc.opcode, byte);
   } else {
-    printf("%04x %02x %02x %02x ", PC, opc.opcode, byte, mem.readByte(PC+2));
+    printf("%04x %02x %02x %02x ", addr, opc.opcode, byte, byte2);
   }
 
   printf("%s ", opc.mnem.c_str());
@@ -67,7 +93,7 @@ void CPU::disAssemble(Opcode opc, uint8_t byte, uint16_t word) {
     case IndirectIndexed:
       break;
 
-    case Implicit:
+    case Implied:
       printf("            ");
       break;
 
@@ -76,7 +102,7 @@ void CPU::disAssemble(Opcode opc, uint8_t byte, uint16_t word) {
       break;
 
     case Relative: {
-      int delta = (byte & 0x80) ? -(byte - 128) + 1 : (byte);
+      int delta = (byte & 0x80) ? -(256 - byte) : (byte);
       uint16_t addr = PC + delta;
       printf("%04X (%4d) ", addr, delta);
     }
@@ -121,7 +147,7 @@ int CPU::operands(AMode mode) {
       return 0;
       break;
 
-    case Implicit:
+    case Implied:
     case Accumulator:
       return 1;
       break;

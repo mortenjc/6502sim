@@ -20,6 +20,7 @@ int main(int argc, char * argv[])
   Memory mem;
   CPU cpu(mem);
 
+  printf("implemented opcodes: %d\n", cpu.getNumOpcodes());
   mem.reset();
 
   //mem.loadSnippets(ldxyi_and_dec);
@@ -33,8 +34,8 @@ int main(int argc, char * argv[])
 
   cpu.reset();
   cpu.debugOn();
-  //cpu.setBreakpointAddr(0x1517); // not working
-  //cpu.setBreakpointRegs(0xd0, 0x05, 0x43); // not working
+  //cpu.setBreakpointAddr(0x1517);
+  //cpu.setBreakpointRegs(0xd0, 0x05, 0x43);
   cpu.run(-1);
 
   //mem.dump(0x20, 6); // for add_two_16_bit_numbers
