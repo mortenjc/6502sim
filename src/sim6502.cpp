@@ -23,9 +23,6 @@ int main(int argc, char * argv[])
   printf("implemented opcodes: %d\n", cpu.getNumOpcodes());
   mem.reset();
 
-
-  //mem.loadSnippets(add32);
-  //mem.loadSnippets(memcpy4);
   mem.loadSnippets(fibonacci32);
   //mem.loadSnippets(weekday);
 
@@ -37,8 +34,7 @@ int main(int argc, char * argv[])
   //cpu.setBreakpointRegs(0xd0, 0x05, 0x43);
   cpu.run(-1);
 
-  mem.dump(0x20, 12); // for add16/32
-  //mem.dump(0x00F0, 3); // for fibonacci
-  //mem.dump(0x2000, 16); // for fibonacci
+  mem.dump(0x0028, 4); // fibonacci32
+
   return 0;
 }

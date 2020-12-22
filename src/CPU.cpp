@@ -44,10 +44,10 @@ void CPU::reset() {
 
 
 void CPU::run(unsigned int n) {
-  while (running and (n > 0)) {
+  while (running and (instructions < n)) {
     uint8_t instruction = getInstruction();
     handleInstruction(instruction);
-    n--;
+    instructions++;
 
     if (bpCheck()) {
       printf("<< BREAK >>\n");

@@ -13,12 +13,13 @@
 
 #include <cassert>
 #include <cstdint>
-#include <cstring>
+#include <string>
 #include <vector>
 
 
 struct Snippet {
   uint16_t address;
+  std::string name;
   std::vector<uint8_t> data;
 };
 
@@ -44,7 +45,8 @@ public:
 
   void loadSnippets(std::vector<Snippet> & snippets) {
     for (auto & snippet : snippets) {
-      printf("Loading %5zu bytes @ 0x%04x\n", snippet.data.size(), snippet.address);
+      printf("Loading %5zu bytes @ 0x%04x - %s\n",
+             snippet.data.size(), snippet.address, snippet.name.c_str());
       load(snippet.address, snippet.data);
     }
   }

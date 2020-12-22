@@ -55,6 +55,7 @@ public:
   bool bpRegCheck{false};   ///< check for breakpoint on registers?
   uint16_t bpAddr;          ///< break point PC address
   uint8_t bpA, bpX, bpY;    ///< break point register values
+  uint64_t instructions{0}; ///< instruction count
 
 
   // Load instructions into array, reset cpu registers
