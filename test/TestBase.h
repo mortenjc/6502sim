@@ -22,7 +22,8 @@ protected:
   void SetUp( ) {
     mem.reset();
     for (int i = 0; i < 256; i++) {
-     mem.writeByte(i, i);         // ZP  : 0, 1, 2, 3, 4
+     mem.writeByte(i, i);           // ZP  : 0, 1, 2, 3, 4
+     mem.writeByte(256 + i, 0xAA);  // To detect ZP wrap problems
      mem.writeByte(0x2000 + i, i);  // 2000: 0, 1, 2, 3, 4
     }
     cpu = new CPU(mem);

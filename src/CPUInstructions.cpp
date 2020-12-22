@@ -114,7 +114,7 @@ bool CPU::handleInstruction(uint8_t opcode) {
       break;
 
     case LDXZY:
-      X = mem.readByte(byte + Y);
+      X = mem.readByte(uint8_t(byte + Y));
       Opc.pf(this, X);
       break;
 
@@ -153,7 +153,7 @@ bool CPU::handleInstruction(uint8_t opcode) {
       break;
 
     case LDYZX:
-      Y = mem.readByte(byte + X);
+      Y = mem.readByte(uint8_t(byte + X));
       Opc.pf(this, Y);
       break;
 
@@ -172,7 +172,7 @@ bool CPU::handleInstruction(uint8_t opcode) {
       break;
 
     case STYZX:
-      mem.writeByte(byte + X, Y);
+      mem.writeByte(uint8_t(byte + X), Y);
       break;
 
     case STYA:
@@ -192,7 +192,7 @@ bool CPU::handleInstruction(uint8_t opcode) {
     break;
 
     case ADCZX: //Add wih carry - ZP,X
-      addcarry(A, mem.readByte(byte + X));
+      addcarry(A, mem.readByte(uint8_t(byte + X)));
     break;
 
     case ADCA: // Add with carry - Absolute
@@ -217,7 +217,7 @@ bool CPU::handleInstruction(uint8_t opcode) {
       break;
 
     case SBCZX: // Subtract with carry - ZP,X
-      subcarry(A, mem.readByte(byte + X));
+      subcarry(A, mem.readByte(uint8_t(byte + X)));
       break;
 
     case SBCA: // Subtract with carry - Absolute

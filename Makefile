@@ -1,7 +1,7 @@
 
 
 PROGS = bin/sim6502
-TESTPROGS = bin/cputest bin/branchtest
+TESTPROGS = bin/cputest bin/branchtest bin/ldatest bin/adctest
 
 CFLAGS = -I src -I test --std=c++11
 TESTFLAGS = -I googletest/googletest/include/ -L googletest/build/lib -lgtest
@@ -32,6 +32,9 @@ bin/branchtest: test/BranchJumpTest.cpp $(COMMONSRC) $(COMMONINC)
 bin/ldatest: test/LDATest.cpp $(COMMONSRC) $(COMMONINC) test/TestBase.h
 	g++ $(CFLAGS) $(TESTFLAGS) test/LDATest.cpp $(COMMONSRC) -o $@
 
+bin/adctest: test/ADCTest.cpp $(COMMONSRC) $(COMMONINC) test/TestBase.h
+	g++ $(CFLAGS) $(TESTFLAGS) test/ADCTest.cpp $(COMMONSRC) -o $@
+
 runtest: test
 	./bin/cputest
 	./bin/branchtest
@@ -40,7 +43,7 @@ runtest: test
 
 # Clean up
 clean:
-	rm -f $(PROGS) a.out
+	rm -f $(PROGS) $(TESTPROGS) a.out
 
 realclean: clean
 	rm -fr googletest

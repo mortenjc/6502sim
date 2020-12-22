@@ -16,7 +16,7 @@
 int16_t CPU::jumpRelative(uint8_t val) {
   int16_t jump;
   if (val & 0x80) {
-    jump = - (256 - val); 
+    jump = - (256 - val);
   } else {
     jump = val;
   }
@@ -25,15 +25,14 @@ int16_t CPU::jumpRelative(uint8_t val) {
 
 
 int CPU::addcarry(uint8_t & reg, uint8_t val) {
-  Status.bits.O = 0; // Clear overflow
-  Status.bits.C = 0; // Clear carry
-
   unsigned int tmp = reg + val + Status.bits.C;
 
+  Status.bits.C = 0; // Clear carry
   if (tmp > 255) {
     Status.bits.C = 1; // Set carry
   }
 
+ Status.bits.O = 0; // Clear overflow
  if (!((reg ^ val) & 0x80) && ((reg ^ tmp) & 0x80)) {
    Status.bits.O = 1;
  }

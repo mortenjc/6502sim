@@ -23,12 +23,8 @@ int main(int argc, char * argv[])
   printf("implemented opcodes: %d\n", cpu.getNumOpcodes());
   mem.reset();
 
-  //mem.loadSnippets(ldxyi_and_dec);
-  //mem.loadSnippets(countdown_y_from_10);
-  //mem.loadSnippets(compare);
-  //mem.loadSnippets(add_two_16_bit_numbers);
-  //mem.loadSnippets(inc_stopif_greatereq);
 
+  //mem.loadSnippets(add_two_16_bit_numbers);
   //mem.loadSnippets(fibonacci);
   mem.loadSnippets(weekday);
 
