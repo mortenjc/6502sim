@@ -104,6 +104,7 @@ void CPU::disAssemble(uint16_t addr, Opcode opc, uint8_t byte, uint8_t byte2, ui
     case Relative: {
       int delta = (byte & 0x80) ? -(256 - byte) : (byte);
       uint16_t addr = PC + delta + 2;  // disassemble before PC increment
+      printf("$%04X(%4d) ", addr, delta);
     }
     break;
     case ZeroPage: {

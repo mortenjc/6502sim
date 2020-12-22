@@ -14,27 +14,41 @@
 #include <Memory.h>
 #include <Programs.h>
 
+Memory mem;
+CPU cpu(mem);
+
+void prgFibonacci() {
+    cpu.debugOn();
+    mem.loadSnippets(fibonacci32);
+    cpu.run(-1);
+    mem.dump(0x0028,  4); // fibonacci32
+}
+
+void prgSieve() {
+    cpu.debugOn();
+    mem.loadSnippets(sieve);
+    cpu.run(-1);
+    mem.dump(0x3000, 16); // sieve
+    mem.dump(0x3010, 16);
+    mem.dump(0x3020, 16);
+}
+
+void prgWeekday() {
+  cpu.debugOn();
+  mem.loadSnippets(weekday);
+  cpu.run(-1);
+}
+
 
 int main(int argc, char * argv[])
 {
-  Memory mem;
-  CPU cpu(mem);
-
   printf("implemented opcodes: %d\n", cpu.getNumOpcodes());
   mem.reset();
-
-  mem.loadSnippets(fibonacci32);
-  //mem.loadSnippets(weekday);
-
   cpu.reset();
-  cpu.debugOn();
-  mem.dump(0x20, 8); // for add16/32
-  mem.dump(0xF0, 4); // for add16/32
-  //cpu.setBreakpointAddr(0x1517);
-  //cpu.setBreakpointRegs(0xd0, 0x05, 0x43);
-  cpu.run(-1);
 
-  mem.dump(0x0028, 4); // fibonacci32
+  prgFibonacci();
+  //prgSieve();
+  //prgWeekday();
 
   return 0;
 }

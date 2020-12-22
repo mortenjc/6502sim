@@ -226,3 +226,62 @@ std::vector<Snippet> weekday {
       RTS
   }}
 };
+
+
+
+// Finding prime numbers using the Sieve of Eratosthenes
+// From https://rosettacode.org/wiki/Sieve_of_Eratosthenes#6502_Assembly
+// Seems to produce primes, but still has bugs
+std::vector<Snippet> sieve {
+  { 0x1000, "main", {
+      LDAI, 0xD0,         // Find primes less than A
+      JSR,  0x00, 0x11,   // sieve()
+      NOP
+  }},
+
+  {0x1100, "sieve", {
+      STAZP, 0xD0,        // ; value of n LABEL ERATOS:
+      LDAI,  0x00,
+      LDXI,  0x00,
+
+      STAAX, 0x00, 0x20,  // ; populate array LABEL SETUP:
+      ADCI,  0x01,
+      INX,
+      CPXZP, 0xD0,
+      BEQ,      3,
+      JMPA,  0x06, 0x11,  // to SETUP
+
+      LDXI,  0x02,        // LABEL SET:
+
+      LDAAX, 0x00, 0x20,  // ; find non-zero - LABEL SIEVE:
+      INX,
+      CPXZP, 0xD0,
+      BEQ,     23,        // SIEVED
+      CMPI,  0x00,
+      BEQ,  (256-12),     // SIEVE
+      STAZP, 0xD1,        // ; current prime
+      CLC,                // LABEL MARK:
+      ADCZP, 0xD1,
+      TAY,
+      LDAI,  0x00,
+      STAAY, 0x00, 0x20,
+      TYA,
+      CMPZP, 0xD0,
+      BCS,   (256-28),    // SIEVE
+      JMPA,  0x23, 0x11,  // MARK
+      LDXI,  0x01,        // LABEL:SIEVED
+      LDYI,  0x00,
+
+      INX,                // LABEL:COPY
+      CPXZP, 0xD0,
+      BCS,     14,        // TO:COPIED
+      LDAAX, 0x00, 0x20,
+      CMPI,  0x00,
+      BEQ,  (256-12),     // TO:COPY
+      STAAY, 0x00, 0x30,
+      INY,
+      JMPA,  0x38, 0x11,  // TO:COPY
+      TYA,                // LABEL:COPIED: ; how many found
+      RTS
+  }}
+};
