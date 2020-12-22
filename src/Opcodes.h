@@ -66,6 +66,7 @@ int (*pf)(CPU * cpu, uint8_t & reg);
 #define STXA    0x8E
 
 #define BCC     0x90
+#define STAIDIX 0x91
 #define STYZX   0x94
 #define STXZY   0x96
 #define TYA     0x98

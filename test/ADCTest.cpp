@@ -36,7 +36,7 @@ protected:
 
 // From: http://www.righto.com/2012/12/the-6502-overflow-flag-explained.html
 TEST_F(ADCTest, ADCOverflow) {
-  cpu->debugOn();
+  //cpu->debugOn();
   ADC2(ADCI, cpu->A, 0x3F, 0x40, 0x7F, 0, 0, 0, 0);
   ADC2(ADCI, cpu->A, 0x40, 0x40, 0x80, 0, 1, 0, 1);
 
@@ -45,23 +45,45 @@ TEST_F(ADCTest, ADCOverflow) {
 
 
 TEST_F(ADCTest, ADCImmediate) {
-  cpu->debugOn();
+  //cpu->debugOn();
   //                 ival  add   res   C  O  Z  N
   ADC2(ADCI, cpu->A, 0x00, 0x00, 0x00, 0, 0, 1, 0);
-
   cpu->Status.bits.C = 1;
   ADC2(ADCI, cpu->A, 0x00, 0x00, 0x01, 0, 0, 0, 0);
-
   ADC2(ADCI, cpu->A, 0xFE, 0x01, 0xFF, 0, 0, 0, 1);
-
   ADC2(ADCI, cpu->A, 0xFF, 0x01, 0x00, 1, 0, 1, 0);
-
   cpu->Status.bits.C = 1;
   ADC2(ADCI, cpu->A, 0xFD, 0x02, 0x00, 1, 0, 1, 0);
 }
 
+TEST_F(ADCTest, ADCZeroPage) {
+  //cpu->debugOn();
+  //                 ival  add   res   C  O  Z  N
+  ADC2(ADCZP, cpu->A, 0x00, 0x00, 0x00, 0, 0, 1, 0);
+  cpu->Status.bits.C = 1;
+  ADC2(ADCZP, cpu->A, 0x00, 0x00, 0x01, 0, 0, 0, 0);
+  ADC2(ADCZP, cpu->A, 0xFE, 0x01, 0xFF, 0, 0, 0, 1);
+  ADC2(ADCZP, cpu->A, 0xFF, 0x01, 0x00, 1, 0, 1, 0);
+  cpu->Status.bits.C = 1;
+  ADC2(ADCZP, cpu->A, 0xFD, 0x02, 0x00, 1, 0, 1, 0);
+}
 
+TEST_F(ADCTest, ADCZeroPageX) {
+  cpu->debugOn();
+  cpu->X = 1;
+  //                  ival  add   res   C  O  Z  N
+  ADC2(ADCZX, cpu->A, 0x00, 0x00, 0x01, 0, 0, 0, 0);
+  cpu->Status.bits.C = 1;
+  ADC2(ADCZX, cpu->A, 0x00, 0x00, 0x02, 0, 0, 0, 0);
 
+  ADC2(ADCZX, cpu->A, 0xFD, 0x01, 0xFF, 0, 0, 0, 1);
+  cpu->Status.bits.C = 0;
+  ADC2(ADCZX, cpu->A, 0xFE, 0x01, 0x00, 1, 0, 1, 0);
+  cpu->Status.bits.C = 0;
+  ADC2(ADCZX, cpu->A, 0xFF, 0x01, 0x01, 1, 0, 0, 0);
+  cpu->Status.bits.C = 1;
+  ADC2(ADCZX, cpu->A, 0xFD, 0x02, 0x01, 1, 0, 0, 0);
+}
 
 
 

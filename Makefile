@@ -39,6 +39,7 @@ runtest: test
 	./bin/cputest
 	./bin/branchtest
 	./bin/ldatest
+	./bin/adctest
 
 
 # Clean up

@@ -24,17 +24,20 @@ int main(int argc, char * argv[])
   mem.reset();
 
 
-  //mem.loadSnippets(add_two_16_bit_numbers);
-  //mem.loadSnippets(fibonacci);
-  mem.loadSnippets(weekday);
+  //mem.loadSnippets(add32);
+  //mem.loadSnippets(memcpy4);
+  mem.loadSnippets(fibonacci32);
+  //mem.loadSnippets(weekday);
 
   cpu.reset();
   cpu.debugOn();
+  mem.dump(0x20, 8); // for add16/32
+  mem.dump(0xF0, 4); // for add16/32
   //cpu.setBreakpointAddr(0x1517);
   //cpu.setBreakpointRegs(0xd0, 0x05, 0x43);
   cpu.run(-1);
 
-  //mem.dump(0x20, 6); // for add_two_16_bit_numbers
+  mem.dump(0x20, 12); // for add16/32
   //mem.dump(0x00F0, 3); // for fibonacci
   //mem.dump(0x2000, 16); // for fibonacci
   return 0;

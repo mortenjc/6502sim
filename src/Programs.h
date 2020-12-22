@@ -19,9 +19,36 @@
 #include <Memory.h>
 #include <Opcodes.h>
 
+// $F0-$F1: Source address
+// $F2-$F3: Destination address
+// X register: Byte count
+// Y register: mem offset (X -1)
+// From http://prosepoetrycode.potterpcs.net/tag/6502/ with bug fixes
+std::vector<Snippet> memcpy4 {
+  {0x0020, {0x00, 0x00, 0x00, 0x00, 0x12, 0x34, 0x56, 0x78}},
+
+  {0x00F0, {0x24, 0x00, 0x20, 0x00}},
+
+  {0x1000, {            // main program
+      JSR,  0x00, 0x15,
+      NOP
+  }},
+
+  {0x1500, {            //memcpy subroutine
+        LDYI, 0x03,
+        LDXI, 0x04,
+        LDAIDIX, 0xF0,  // 2 bytes, 5 cycles - lbl1
+        STAIDIX, 0xF2,  // 2 bytes, 6 cycles
+        DEY,
+        DEX,            // 1 byte, 2 cycles
+        BNE, (256-8),   // 2 bytes, 2-3 cycles - to lbl1
+        RTS            // 1 byte, 6 cycles
+  }}
+};
+
 
 // From https://dwheeler.com/6502/oneelkruns/asm1step.html
-std::vector<Snippet> add_two_16_bit_numbers {
+std::vector<Snippet> add16 {
   // Data: two 16-bit numbers loaded at address 0x20
   {0x20, {
     0xCD, 0xAB,   // 0xABCD
@@ -42,34 +69,102 @@ std::vector<Snippet> add_two_16_bit_numbers {
 };
 
 
-//
-// 'real' programs below
-//
+std::vector<Snippet> add32 {
+  // Data: two 32-bit numbers loaded at address 0x20 and 0x24
+  {0x20, {
+    0x01, 0xAA, 0x82, 0x0F,  // 0x0F82AA01
+    0xFE, 0x55, 0x7D, 0xF0   // 0xF07D55FE  - sum 0xFFFFFFFF
+  }},
 
-
-// From https://rosettacode.org/wiki/Fibonacci_sequence#6502_Assembly
-// stores data at 0x2000
-std::vector<Snippet> fibonacci {
+  // Progam to add with carry
   {0x1000, {
-    LDAI,  0,
-    STAZP, 0xF0,       // LOWER NUMBER
-    LDAI,  1,
-    STAZP, 0xF1,       // HIGHER NUMBER
-    LDXI,  0,
-    LDAZP, 0xF1,       // LOOP
-    STAAX, 0x00, 0x20,
-    STAZP, 0xF2,       // OLD HIGHER NUMBER
-    ADCZP, 0xF0,
-    STAZP, 0xF1,       // NEW HIGHER NUMBER
-    LDAZP, 0xF2,
-    STAZP, 0xF0,       // NEW LOWER NUMBER
-    INX,
-    CPXI,  0x0A,       // STOP AT FIB(10)
-    BMI,   (256-20),   // 20 back
-    NOP                // WAS  RTS
+    CLC,
+    LDAZP, 0x20,
+    ADCZP, 0x24,
+    STAZP, 0x28,
+
+    LDAZP, 0x21,
+    ADCZP, 0x25,
+    STAZP, 0x29,
+
+    LDAZP, 0x22,
+    ADCZP, 0x26,
+    STAZP, 0x2A,
+
+    LDAZP, 0x23,
+    ADCZP, 0x27,
+    STAZP, 0x2B,
+    NOP
   }}
 };
 
+
+// Calculates Fibonacci numbers below 2^32 (F47)
+// Last value is stored in 0x0028 - 0x002B
+std::vector<Snippet> fibonacci32 {
+  {0x0020, {0x00, 0x00, 0x00, 0x00,  // Fn
+            0x01, 0x00, 0x00, 0x00,  // F(n+1)
+            0x00, 0x00, 0x00, 0x00   // Fn + F(n+1)
+  }},
+
+  {0x00F0, {0x24, 0x00, 0x20, 0x00}}, // dst, src address
+
+  {0x1000, {             // fibonacci32()
+    LDXI,       0,
+    JSR,     0x00, 0x15, // F(n-2) + F(n-1)  - lbl1
+
+    TXA,                 // Copy F(n-1) to F(n-2), copy Fn to F(n-1)
+    PHA,
+    LDAI,    0x24,       // set dst and src addresses
+    STAZP,   0xF0,
+    LDAI,    0x20,
+    STAZP,   0xF2,
+    JSR,     0x00, 0x17, // memcpy(0x0020, 0x0024, 4)
+    LDAI,    0x28,       // set dst and src addresses
+    STAZP,   0xF0,
+    LDAI,    0x24,
+    STAZP,   0xF2,
+    JSR,     0x00, 0x17, // memcpy(0x0024, 0x0028, 4)
+    PLA,                 // pop A from stack
+    TAX,                 // restore X (which was corrupted by this subr)
+
+    INX,
+    CPXI,  (47-1),       // STOP AT FIB 47
+    BMI, (256-34),       // 34 back     - to lbl1
+    NOP                  // WAS  RTS
+  }},
+
+  {0x1500, {             // subr add32()
+    CLC,
+    LDAZP,   0x20,       // byte 0 (LSB)
+    ADCZP,   0x24,
+    STAZP,   0x28,
+
+    LDAZP,   0x21,       // byte 1
+    ADCZP,   0x25,
+    STAZP,   0x29,
+
+    LDAZP,   0x22,       // byte 2
+    ADCZP,   0x26,
+    STAZP,   0x2A,
+
+    LDAZP,   0x23,       // byte 3 (MSB)
+    ADCZP,   0x27,
+    STAZP,   0x2B,
+    RTS
+  }},
+
+  {0x1700, { // subr memcpy4()
+    LDYI,    0x03,
+    LDXI,    0x04,
+    LDAIDIX, 0xF0,       // 2 bytes, 5 cycles - lbl1
+    STAIDIX, 0xF2,       // 2 bytes, 6 cycles
+    DEY,
+    DEX,                 // 1 byte, 2 cycles
+    BNE,  (256-8),        // 2 bytes, 2-3 cycles - to lbl1
+    RTS             // 1 byte, 6 cycles
+  }}
+};
 
 
 // From: http://www.6502.org/source/misc/dow.htm

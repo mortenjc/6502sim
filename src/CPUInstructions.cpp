@@ -85,9 +85,11 @@ bool CPU::handleInstruction(uint8_t opcode) {
       Opc.pf(this, A);
       break;
 
-    case LDAIDIX: // Indirect, Indexed ?
-      A = mem.readByte(mem.readWord(byte) + Y);
+    case LDAIDIX: {// Indirect, Indexed ?
+      uint16_t addr = mem.readWord(byte) + Y;
+      A = mem.readByte(addr);
       Opc.pf(this, A);
+      }
       break;
 
     case STAZP:
@@ -100,6 +102,10 @@ bool CPU::handleInstruction(uint8_t opcode) {
 
     case STAAY:
       mem.writeByte(word + Y, A);
+      break;
+
+    case STAIDIX: // Indirect, Indexed
+      mem.writeByte(mem.readWord(byte) + Y, A);
       break;
 
     // X
@@ -248,7 +254,7 @@ bool CPU::handleInstruction(uint8_t opcode) {
       break;
 
     case DEY:
-      Opc.pf(this, X);
+      Opc.pf(this, Y);
       break;
 
     case INCA: { // INC memory absolute
