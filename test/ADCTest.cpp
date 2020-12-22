@@ -69,7 +69,7 @@ TEST_F(ADCTest, ADCZeroPage) {
 }
 
 TEST_F(ADCTest, ADCZeroPageX) {
-  cpu->debugOn();
+  //cpu->debugOn();
   cpu->X = 1;
   //                  ival  add   res   C  O  Z  N
   ADC2(ADCZX, cpu->A, 0x00, 0x00, 0x01, 0, 0, 0, 0);

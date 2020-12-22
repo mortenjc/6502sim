@@ -9,19 +9,19 @@
 
 #include <TestBase.h>
 
-class CPUTest: public TestBase { };
+class BranchTest: public TestBase { };
 
 // Test that popping from top of stack wraps to bottom
-TEST_F(CPUTest, ReturnSubroutine) {
-  cpu->debugOn();
+TEST_F(BranchTest, ReturnSubroutine) {
+  //cpu->debugOn();
   ASSERT_EQ(cpu->getSPAddr(), 0x1FF);
   exec1opcmd(RTS);
   ASSERT_EQ(cpu->getSPAddr(), 0x101);
 }
 
 // Test thah pushing to full stack wraps to top
-TEST_F(CPUTest, JumpSubroutineStackFull) {
-  cpu->debugOn();
+TEST_F(BranchTest, JumpSubroutineStackFull) {
+  //cpu->debugOn();
   mem.writeByte(0x2000, RTS);
   mem.writeByte(0x1003, NOP);
   cpu->S = 1;
@@ -31,8 +31,8 @@ TEST_F(CPUTest, JumpSubroutineStackFull) {
   ASSERT_EQ(cpu->PC, 0x2000);
 }
 
-TEST_F(CPUTest, JumpSubroutine) {
-  cpu->debugOn();
+TEST_F(BranchTest, JumpSubroutine) {
+  //cpu->debugOn();
   mem.writeByte(0x2000, RTS);
   mem.writeByte(0x1003, NOP);
   ASSERT_EQ(cpu->getSPAddr(), 0x1FF);
@@ -52,8 +52,8 @@ TEST_F(CPUTest, JumpSubroutine) {
 }
 
 
-TEST_F(CPUTest, JumpAbsandInd) {
-  cpu->debugOn();
+TEST_F(BranchTest, JumpAbsandInd) {
+  //cpu->debugOn();
   exec3opcmd(JMPA, 0x00, 0x20);
   ASSERT_EQ(cpu->getSPAddr(), 0x1FF);
   ASSERT_EQ(cpu->PC, 0x2000);

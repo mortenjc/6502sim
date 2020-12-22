@@ -35,11 +35,9 @@ bin/ldatest: test/LDATest.cpp $(COMMONSRC) $(COMMONINC) test/TestBase.h
 bin/adctest: test/ADCTest.cpp $(COMMONSRC) $(COMMONINC) test/TestBase.h
 	g++ $(CFLAGS) $(TESTFLAGS) test/ADCTest.cpp $(COMMONSRC) -o $@
 
-runtest: test
-	./bin/cputest
-	./bin/branchtest
-	./bin/ldatest
-	./bin/adctest
+runtest: $(TESTPROGS)
+	for test in $(TESTPROGS); do ./$$test || exit 1; done
+
 
 
 # Clean up
