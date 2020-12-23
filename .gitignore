@@ -2,3 +2,4 @@ cputest
 googletest/
 sim6502
 bin/
+build/
