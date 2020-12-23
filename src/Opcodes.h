@@ -47,6 +47,8 @@ int (*pf)(CPU * cpu, uint8_t & reg);
 #define LSR     0x4A
 #define JMPA    0x4C
 
+#define BVC     0x50
+
 #define RTS     0x60
 #define ADCZP   0x65
 #define PLA     0x68
@@ -54,6 +56,7 @@ int (*pf)(CPU * cpu, uint8_t & reg);
 #define JMPI    0x6C
 #define ADCA    0x6D
 
+#define BVS     0x70
 #define ADCZX   0x75
 #define ADCAY   0x79
 #define ADCAX   0x7D
@@ -64,6 +67,7 @@ int (*pf)(CPU * cpu, uint8_t & reg);
 #define DEY     0x88
 #define TXA     0x8A
 #define STYA    0x8C
+#define STAA    0x8D
 #define STXA    0x8E
 
 #define BCC     0x90

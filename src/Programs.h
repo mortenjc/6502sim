@@ -296,17 +296,18 @@ std::vector<Snippet> sieve {
 #define CARRY VARN + 7
 std::vector<Snippet> div32 {
   {0x0020, "data", {
-    0x00, 0xA0,            // dividend
-    0x00, 0x00, 0x00, 0x14,// divisor
+    0x01, 0x00,            // divisor
+    0x00, 0x00, 0xFF, 0xFF,// dividend
     0x00, 0x00             // scratchpad, carry
   }},
+
   {0x1000, "div32", {
     SEC,                   //  LABEL:START Detect overflow or /0 condition.
     LDAZP,    VARN + 2,    // Divisor must be more than high cell of dividend.  To
     SBCZP,    VARN,        // find out, subtract divisor from high cell of dividend//
     LDAZP,    VARN + 3,    // if carry flag is still set at the end, the divisor was
     SBCZP,    VARN + 1,    // not big enough to avoid overflow. This also takes care
-    BCS,      45,          //to oflo$   // of any /0 condition.  Branch if overflow or /0 error.
+    BCS,      45,          // to oflo$   // of any /0 condition.  Branch if overflow or /0 error.
                            // We will loop 16 times// but since we shift the dividend
     LDXI,     0x11,        // over at the same time as shifting the answer in, the
                            // operation must start AND finish with a shift of the

@@ -83,7 +83,7 @@ public:
   void run(unsigned int n) ;
 
   // Reset CPU - clear registers, set program counter
-  void reset();
+  void reset(uint16_t addr);
 
   // SP address calculation
   uint16_t getSPAddr() { return SPBase + S; }
@@ -208,6 +208,8 @@ private:
     {LSR,   "LSR", Implied,   na},
     {JMPA,  "JMP", Absolute,  na},
 
+    {BVC,   "BVC", Relative,  na},
+
     {RTS,   "RTS", Implied,   na},
     {ADCZP, "ADC", ZeroPage,  na},
     {PLA,   "PLA", Implied,   na},
@@ -215,6 +217,7 @@ private:
     {JMPI,  "JMP", Indirect,  na},
     {ADCA,  "ADC", Absolute,  na},
 
+    {BVS,   "BVS", Relative,  na},
     {ADCZX, "ADC", ZeroPageX, na},
     {ADCAY, "ADC", AbsoluteY, na},
     {ADCAX, "ADC", AbsoluteX, na},
@@ -225,6 +228,7 @@ private:
     {DEY,   "DEY", Implied,   dec},
     {TXA,   "TXA", Implied,   na},
     {STYA,  "STY", Absolute,  na},
+    {STAA,  "STA", Absolute,  na},
     {STXA,  "STX", Absolute,  na},
 
     {BCC,   "BCC", Relative,  na},

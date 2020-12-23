@@ -45,14 +45,14 @@ int CPU::addcarry(uint8_t & reg, uint8_t val) {
 
 int CPU::subcarry(uint8_t & unused, uint8_t M) {
   Status.bits.O = 0;
-  Status.bits.C = 0;
 
-  unsigned int tmp = A - M - (Status.bits.C ^ 1);
+  unsigned int tmp = A - M - (1 - Status.bits.C);
 
   if (((A ^ tmp) & 0x80) && ((A ^ M) & 0x80)) {
     Status.bits.O = 1;
   }
 
+  Status.bits.C = 0;
   if (tmp < 0x100) {
     Status.bits.C = 1;
   }

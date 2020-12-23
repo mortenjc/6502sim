@@ -32,6 +32,13 @@ TEST_F(CPUTest, Flags) {
   ASSERT_EQ(cpu->Status.mask, 1 + 2 + 4 + 8 + 16 + 64 + 128);
 }
 
+TEST_F(CPUTest, FlagsAO) {
+  cpu->Status.mask = 0;
+  cpu->Status.bits.B = 1;
+  cpu->Status.bits.r = 1;
+  ASSERT_EQ(cpu->Status.mask, 0x30);
+}
+
 TEST_F(CPUTest, IncX) {
   mem.writeByte(0x1000, INX);
 
@@ -84,34 +91,6 @@ TEST_F(CPUTest, IncY) {
   ASSERT_EQ(cpu->Status.bits.Z, 1);
 }
 
-
-TEST_F(CPUTest, AddCarry) {
-  //cpu->debugOn();
-  exec2opcmd(LDAI,  0);
-  exec2opcmd(ADCI,  0);
-  ASSERT_EQ(cpu->A, 0);
-  ASSERT_EQ(cpu->Status.bits.C, 0);
-  ASSERT_EQ(cpu->Status.bits.N, 0);
-  ASSERT_EQ(cpu->Status.bits.Z, 1);
-
-  for (int i = 1; i < 0x80; i++) {
-    exec2opcmd(LDAI,  0);
-    exec2opcmd(ADCI,  i);
-    ASSERT_EQ(cpu->A, i);
-    ASSERT_EQ(cpu->Status.bits.C, 0);
-    ASSERT_EQ(cpu->Status.bits.N, 0);
-    ASSERT_EQ(cpu->Status.bits.Z, 0);
-  }
-
-  for (int i = 0x80; i < 0xFF; i++) {
-    exec2opcmd(LDAI,  0);
-    exec2opcmd(ADCI,  i);
-    ASSERT_EQ(cpu->A, i);
-    ASSERT_EQ(cpu->Status.bits.C, 0);
-    ASSERT_EQ(cpu->Status.bits.N, 1);
-    ASSERT_EQ(cpu->Status.bits.Z, 0);
-  }
-}
 
 
 TEST_F(CPUTest, ClearSetCarry) {
@@ -182,44 +161,7 @@ TEST_F(CPUTest, AndOrXorBit) {
   ASSERT_EQ(cpu->Status.bits.Z, 0);
 }
 
-TEST_F(CPUTest, AddCarryCarrySet) {
-  //cpu->debugOn();
-  exec1opcmd(CLC);
-  exec2opcmd(LDAI,  255);
-  exec2opcmd(ADCI,  0);
-  ASSERT_EQ(cpu->A, 255);
-  ASSERT_EQ(cpu->Status.bits.C, 0);
-  ASSERT_EQ(cpu->Status.bits.N, 1);
-  ASSERT_EQ(cpu->Status.bits.Z, 0);
 
-  exec1opcmd(CLC);
-  exec2opcmd(LDAI,  255);
-  exec2opcmd(ADCI,  1);
-  ASSERT_EQ(cpu->A, 0);
-  ASSERT_EQ(cpu->Status.bits.C, 1);
-  ASSERT_EQ(cpu->Status.bits.N, 0);
-  ASSERT_EQ(cpu->Status.bits.Z, 1);
-
-  for (int i = 2; i < 0x81; i++) {
-    exec1opcmd(CLC);
-    exec2opcmd(LDAI,  255);
-    exec2opcmd(ADCI,  i);
-    ASSERT_EQ(cpu->A, i - 1);
-    ASSERT_EQ(cpu->Status.bits.C, 1);
-    ASSERT_EQ(cpu->Status.bits.N, 0);
-    ASSERT_EQ(cpu->Status.bits.Z, 0);
-  }
-
-  for (int i = 0x81; i < 0xFF; i++) {
-    exec1opcmd(CLC);
-    exec2opcmd(LDAI,  255);
-    exec2opcmd(ADCI,  i);
-    ASSERT_EQ(cpu->A, i - 1);
-    ASSERT_EQ(cpu->Status.bits.C, 1);
-    ASSERT_EQ(cpu->Status.bits.N, 1);
-    ASSERT_EQ(cpu->Status.bits.Z, 0);
-  }
-}
 
 TEST_F(CPUTest, CompareX) {
   exec2opcmd(LDXI,  0x01);

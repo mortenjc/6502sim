@@ -86,9 +86,72 @@ TEST_F(ADCTest, ADCZeroPageX) {
 }
 
 
+TEST_F(ADCTest, AddCarry) {
+  //cpu->debugOn();
+  exec2opcmd(LDAI,  0);
+  exec2opcmd(ADCI,  0);
+  ASSERT_EQ(cpu->A, 0);
+  ASSERT_EQ(cpu->Status.bits.C, 0);
+  ASSERT_EQ(cpu->Status.bits.N, 0);
+  ASSERT_EQ(cpu->Status.bits.Z, 1);
 
+  for (int i = 1; i < 0x80; i++) {
+    exec2opcmd(LDAI,  0);
+    exec2opcmd(ADCI,  i);
+    ASSERT_EQ(cpu->A, i);
+    ASSERT_EQ(cpu->Status.bits.C, 0);
+    ASSERT_EQ(cpu->Status.bits.N, 0);
+    ASSERT_EQ(cpu->Status.bits.Z, 0);
+  }
 
+  for (int i = 0x80; i < 0xFF; i++) {
+    exec2opcmd(LDAI,  0);
+    exec2opcmd(ADCI,  i);
+    ASSERT_EQ(cpu->A, i);
+    ASSERT_EQ(cpu->Status.bits.C, 0);
+    ASSERT_EQ(cpu->Status.bits.N, 1);
+    ASSERT_EQ(cpu->Status.bits.Z, 0);
+  }
+}
 
+TEST_F(ADCTest, AddCarryCarrySet) {
+  //cpu->debugOn();
+  exec1opcmd(CLC);
+  exec2opcmd(LDAI,  255);
+  exec2opcmd(ADCI,  0);
+  ASSERT_EQ(cpu->A, 255);
+  ASSERT_EQ(cpu->Status.bits.C, 0);
+  ASSERT_EQ(cpu->Status.bits.N, 1);
+  ASSERT_EQ(cpu->Status.bits.Z, 0);
+
+  exec1opcmd(CLC);
+  exec2opcmd(LDAI,  255);
+  exec2opcmd(ADCI,  1);
+  ASSERT_EQ(cpu->A, 0);
+  ASSERT_EQ(cpu->Status.bits.C, 1);
+  ASSERT_EQ(cpu->Status.bits.N, 0);
+  ASSERT_EQ(cpu->Status.bits.Z, 1);
+
+  for (int i = 2; i < 0x81; i++) {
+    exec1opcmd(CLC);
+    exec2opcmd(LDAI,  255);
+    exec2opcmd(ADCI,  i);
+    ASSERT_EQ(cpu->A, i - 1);
+    ASSERT_EQ(cpu->Status.bits.C, 1);
+    ASSERT_EQ(cpu->Status.bits.N, 0);
+    ASSERT_EQ(cpu->Status.bits.Z, 0);
+  }
+
+  for (int i = 0x81; i < 0xFF; i++) {
+    exec1opcmd(CLC);
+    exec2opcmd(LDAI,  255);
+    exec2opcmd(ADCI,  i);
+    ASSERT_EQ(cpu->A, i - 1);
+    ASSERT_EQ(cpu->Status.bits.C, 1);
+    ASSERT_EQ(cpu->Status.bits.N, 1);
+    ASSERT_EQ(cpu->Status.bits.Z, 0);
+  }
+}
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);

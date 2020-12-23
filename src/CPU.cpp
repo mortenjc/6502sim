@@ -29,16 +29,19 @@ CPU::CPU(Memory & memory) : mem(memory) {
     assert(instset[opc.opcode].opcode == 0xFF);
     instset[opc.opcode] = opc;
   }
-  reset();
 };
 
 // Sets registers and flags to zero
 // Sets Stack pointer (SP) to default (0x1FF)
 // Sets program counter (PC) to value read from memory
-void CPU::reset() {
+void CPU::reset(uint16_t start) {
   A = X = Y = 0;
   Status.mask = 0;
-  PC = mem.readWord(power_on_reset_addr);
+  if (start != 0) {
+    PC = start;
+  } else {
+    PC = mem.readWord(power_on_reset_addr);
+  }
   S = 0xFF; // SP = SPBase + S
 }
 
@@ -62,7 +65,7 @@ void CPU::printRegisters() {
     return;
 
   printf(" ; 0x%04x(%03x): A:%02x  X:%02x  Y:%02x ", PC, getSPAddr(), A, X, Y);
-  printf(" [%c%c%c%c%c%c%c]\n",
+  printf(" [%c%c%c%c%c%c%c]",
       Status.bits.C ? 'c' : ' ' ,
       Status.bits.Z ? 'z' : ' ' ,
       Status.bits.I ? 'i' : ' ' ,

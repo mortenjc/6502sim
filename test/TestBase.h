@@ -27,7 +27,7 @@ protected:
      mem.writeByte(0x2000 + i, i);  // 2000: 0, 1, 2, 3, 4
     }
     cpu = new CPU(mem);
-    cpu->reset();
+    cpu->reset(0x0000);
   }
 
   void TearDown( ) { }

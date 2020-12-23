@@ -96,6 +96,10 @@ bool CPU::handleInstruction(uint8_t opcode) {
       mem.writeByte(byte, A);
       break;
 
+    case STAA:
+      mem.writeByte(word, A);
+      break;
+
     case STAAX:
       mem.writeByte(word + X, A);
       break;
@@ -343,6 +347,18 @@ bool CPU::handleInstruction(uint8_t opcode) {
       }
     break;
 
+    case BVC: // Branch if overflow clear
+      if (Status.bits.O == 0) {
+        PC += jumpRelative(byte);
+      }
+    break;
+
+    case BVS: // Branch if overflow set
+      if (Status.bits.O == 1) {
+        PC += jumpRelative(byte);
+      }
+    break;
+
 
     /// Group: Jumps & Calls (Complete)
     case JSR:
@@ -447,24 +463,31 @@ bool CPU::handleInstruction(uint8_t opcode) {
       break;
 
     case PHA:
-      S--;
       mem.writeByte(getSPAddr(), A);
+      S--;
       break;
 
-    case PHP:
-      S--;
-      mem.writeByte(getSPAddr(), Status.mask);
+    case PHP: {
+        uint8_t oldB = Status.bits.B;
+        uint8_t oldr = Status.bits.r;
+        Status.bits.B = 1;
+        Status.bits.r = 1;
+        mem.writeByte(getSPAddr(), Status.mask);
+        Status.bits.B = oldB;
+        Status.bits.r = oldr;
+        S--;
+      }
       break;
 
     case PLA:
-      A = mem.readByte(getSPAddr());
       S++;
+      A = mem.readByte(getSPAddr());
       updateStatusZN(A);
       break;
 
     case PLP:
-      Status.mask = mem.readByte(getSPAddr());
       S++;
+      Status.mask = mem.readByte(getSPAddr());
       break;
 
 
@@ -475,8 +498,8 @@ bool CPU::handleInstruction(uint8_t opcode) {
 
     case 0xFF:  // Commands that are invalid
       running = false;
-      if (not debugPrint)
-        printf("unregistered command ($%02x) exiting...\n", Opc.opcode);
+      //if (not debugPrint)
+        printf("$%02x", opcode);
       break;
 
     default:
@@ -487,6 +510,13 @@ bool CPU::handleInstruction(uint8_t opcode) {
   }
 
   printRegisters();
+  //printf("\n");
+  if (debugPrint)
+    mem.dump(0x1fc, 6);
+  if (addr == PC) {
+    printf("loop detected, exiting ...\n");
+    running = false;
+  }
 
   return running;
 }

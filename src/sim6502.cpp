@@ -13,6 +13,7 @@
 #include <CPU.h>
 #include <Memory.h>
 #include <Programs.h>
+#include <CLI11/include/CLI/CLI.hpp>
 
 Memory mem;
 CPU cpu(mem);
@@ -43,20 +44,59 @@ void prgDiv32() {
   cpu.debugOn();
   mem.loadSnippets(div32);
   cpu.run(-1);
-  mem.dump(0x0020, 6);
+  mem.dump(0x0020, 2);
+  mem.dump(0x0022, 4);
+  mem.dump(0x0026, 1);
+  mem.dump(0x0027, 1);
+}
+
+void selectProgram(int prog) {
+  switch (prog) {
+    case 0:
+      prgFibonacci();
+      break;
+    case 1:
+      prgSieve();
+      break;
+    case 2:
+      prgWeekday();
+      break;
+    case 3:
+      prgDiv32();
+      break;
+    default:
+      printf("Program %d is not available\n", prog);
+      break;
+  }
 }
 
 
 int main(int argc, char * argv[])
 {
-  printf("implemented opcodes: %d\n", cpu.getNumOpcodes());
-  mem.reset();
-  cpu.reset();
+  CLI::App app{"6502 Simulator"};
 
-  prgFibonacci();
-  //prgSieve();
-  //prgWeekday();
-  //prgDiv32();
+  int programIndex{0};
+  uint16_t bootAddr{0x0000};
+  std::string filename = "";
+  bool interactive{false};
+  app.add_option("-l,--load", filename, "load binary file into memory and run");
+  app.add_option("-b,--boot", bootAddr, "set CPU Program Counter");
+  app.add_option("-p,--program", programIndex, "choose program to run");
+
+  CLI11_PARSE(app, argc, argv);
+
+  printf("implemented opcodes: %d\n", cpu.getNumOpcodes());
+
+  mem.reset();
+  if (filename != "") {
+    mem.loadBinaryFile(filename, 0x0000);
+    cpu.reset(bootAddr);
+    cpu.debugOn();
+    cpu.run(-1);
+    mem.dump(0x200, 4);
+  } else {
+    selectProgram(programIndex);
+  }
 
   return 0;
 }
