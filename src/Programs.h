@@ -285,3 +285,66 @@ std::vector<Snippet> sieve {
       RTS
   }}
 };
+
+
+
+
+// From http://www.6502.org/source/integers/ummodfix/ummodfix.htm
+// Work in progress
+// ZP vars start @ 0x20
+#define VARN 0x20
+#define CARRY VARN + 7
+std::vector<Snippet> div32 {
+  {0x0020, "data", {
+    0x00, 0xA0,            // dividend
+    0x00, 0x00, 0x00, 0x14,// divisor
+    0x00, 0x00             // scratchpad, carry
+  }},
+  {0x1000, "div32", {
+    SEC,                   //  LABEL:START Detect overflow or /0 condition.
+    LDAZP,    VARN + 2,    // Divisor must be more than high cell of dividend.  To
+    SBCZP,    VARN,        // find out, subtract divisor from high cell of dividend//
+    LDAZP,    VARN + 3,    // if carry flag is still set at the end, the divisor was
+    SBCZP,    VARN + 1,    // not big enough to avoid overflow. This also takes care
+    BCS,      45,          //to oflo$   // of any /0 condition.  Branch if overflow or /0 error.
+                           // We will loop 16 times// but since we shift the dividend
+    LDXI,     0x11,        // over at the same time as shifting the answer in, the
+                           // operation must start AND finish with a shift of the
+                           // low cell of the dividend (which ends up holding the
+                           // quotient), so we start with 17 (11H) in X.
+    ROLZP,    VARN + 4,    // LABEL:LOOP Move low cell of dividend left one bit, also shifting
+    ROLZP,    VARN + 5,    // answer in. The 1st rotation brings in a 0, which later
+                           // gets pushed off the other end in the last rotation.
+    DEX,
+    BEQ,      46,          // to end$ - Branch to the end if finished.
+
+    ROLZP,    VARN + 2,    // Shift high cell of dividend left one bit, also
+    ROLZP,    VARN + 3,    // shifting next bit in from high bit of low cell.
+    LDAI,     0x00,        //
+    STAZP,    CARRY,       // Zero old bits of CARRY so subtraction works right.
+    ROLZP,    CARRY,       // Store old high bit of dividend in CARRY.  (For STZ
+                           // one line up, NMOS 6502 will need LDA #0, STA CARRY.)
+    SEC,                   // See if divisor will fit into high 17 bits of dividend
+    LDAZP,    VARN + 2,    // by subtracting and then looking at carry flag.
+    SBCZP,    VARN,        // First do low byte.
+    STAZP,    VARN + 6,    // Save difference low byte until we know if we need it.
+    LDAZP,    VARN + 3,    //
+    SBCZP,    VARN + 1,    // Then do high byte.
+    TAY,                   // Save difference high byte until we know if we need it.
+    LDAZP,    CARRY,       // Bit 0 of CARRY serves as 17th bit.
+    SBCI,     0x00,        // Complete the subtraction by doing the 17th bit before
+    BCC,      256 - 35,    // to loop - determining if the divisor fit into the high 17 bits
+                           // of the dividend.  If so, the carry flag remains set.
+    LDAZP,    VARN + 6,    // If divisor fit into dividend high 17 bits, update
+    STAZP,    VARN + 2,    // dividend high cell to what it would be after
+    STYZP,    VARN + 3,    // subtraction.
+    BCS,      256 - 43,    // to loop - Always branch.  NMOS 6502 could use BCS here.
+
+    LDAI,     0xFF,        // LABEL:oflo$ - If overflow occurred, put FF
+    STAZP,    VARN + 2,    // in remainder low byte
+    STAZP,    VARN + 3,    // and high byte,
+    STAZP,    VARN + 4,    // and in quotient low byte
+    STAZP,    VARN + 5,    // and high byte.
+    RTS                    // LABEL:end$
+    }}
+};

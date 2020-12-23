@@ -39,6 +39,13 @@ void prgWeekday() {
   cpu.run(-1);
 }
 
+void prgDiv32() {
+  cpu.debugOn();
+  mem.loadSnippets(div32);
+  cpu.run(-1);
+  mem.dump(0x0020, 6);
+}
+
 
 int main(int argc, char * argv[])
 {
@@ -49,6 +56,7 @@ int main(int argc, char * argv[])
   prgFibonacci();
   //prgSieve();
   //prgWeekday();
+  //prgDiv32();
 
   return 0;
 }

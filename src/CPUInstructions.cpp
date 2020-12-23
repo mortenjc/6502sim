@@ -408,6 +408,15 @@ bool CPU::handleInstruction(uint8_t opcode) {
       updateStatusZN(A);
       break;
 
+    case ROLZP: {
+        uint8_t val = mem.readByte(byte);
+        Status.bits.C = (val >> 7); // bit 7 -> Carry
+        val = val << 1;
+        mem.writeByte(byte, val);
+        updateStatusZN(A);
+      }
+      break;
+
 
     //
     // Register Transfers (Complete)

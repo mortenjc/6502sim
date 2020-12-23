@@ -39,6 +39,7 @@ public:
       uint8_t I : 1;
       uint8_t D : 1;
       uint8_t B : 1;
+      uint8_t r : 1; // reserved, not used
       uint8_t O : 1;
       uint8_t N : 1;
     } bits;
@@ -194,6 +195,7 @@ private:
 
     {JSR,   "JSR", Absolute,  na},
     {BITZP, "BIT", ZeroPage,  na},
+    {ROLZP, "ROL", ZeroPage,  na},
     {PLP,   "PLP", Implied,   na},
     {ANDI,  "AND", Immediate, na},
     {BITA,  "BIT", Absolute,  na},

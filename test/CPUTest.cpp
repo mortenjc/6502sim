@@ -13,6 +13,25 @@
 
 class CPUTest: public TestBase {};
 
+
+TEST_F(CPUTest, Flags) {
+  cpu->Status.mask = 0;
+  cpu->Status.bits.C = 1;
+  ASSERT_EQ(cpu->Status.mask, 1);
+  cpu->Status.bits.Z = 1;
+  ASSERT_EQ(cpu->Status.mask, 1 + 2);
+  cpu->Status.bits.I = 1;
+  ASSERT_EQ(cpu->Status.mask, 1 + 2 + 4);
+  cpu->Status.bits.D = 1;
+  ASSERT_EQ(cpu->Status.mask, 1 + 2 + 4 + 8 );
+  cpu->Status.bits.B = 1;
+  ASSERT_EQ(cpu->Status.mask, 1 + 2 + 4 + 8 + 16);
+  cpu->Status.bits.O = 1;
+  ASSERT_EQ(cpu->Status.mask, 1 + 2 + 4 + 8 + 16 + 64);
+  cpu->Status.bits.N = 1;
+  ASSERT_EQ(cpu->Status.mask, 1 + 2 + 4 + 8 + 16 + 64 + 128);
+}
+
 TEST_F(CPUTest, IncX) {
   mem.writeByte(0x1000, INX);
 
@@ -231,6 +250,21 @@ TEST_F(CPUTest, CompareX) {
   ASSERT_EQ(cpu->Status.bits.C, 1);
   ASSERT_EQ(cpu->Status.bits.Z, 0);
   ASSERT_EQ(cpu->Status.bits.N, 1);
+}
+
+
+TEST_F(CPUTest, ShiftsROL) {
+  exec2opcmd(ROLZP, 0x00);
+  ASSERT_EQ(0x00, mem.readByte(0x00));
+  exec2opcmd(ROLZP, 0x01);
+  ASSERT_EQ(0x02, mem.readByte(0x01));
+  exec2opcmd(ROLZP, 0x20);
+  ASSERT_EQ(0x40, mem.readByte(0x20));
+
+  ASSERT_EQ(mem.readByte(0x80), 0x80);
+  exec2opcmd(ROLZP, 0x80);
+  ASSERT_EQ(0x00, mem.readByte(0x80));
+  ASSERT_EQ(cpu->Status.bits.C, 1);
 }
 
 int main(int argc, char **argv) {

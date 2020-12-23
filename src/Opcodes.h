@@ -34,6 +34,7 @@ int (*pf)(CPU * cpu, uint8_t & reg);
 
 #define JSR     0x20
 #define BITZP   0x24
+#define ROLZP   0x26
 #define PLP     0x28
 #define ANDI    0x29
 #define BITA    0x2C
