@@ -808,14 +808,15 @@ bool CPU::handleInstruction(uint8_t opcode) {
     default:
       Opc.pf(this, X);
       running = false;
-      printf(" ; unimplemented command ($%02x) exiting...\n", Opc.opcode);
+      printf("unimplemented command ($%02x) exiting...\n", Opc.opcode);
       break;
   }
 
   printRegisters();
-  //printf("\n");
+
   if (debugPrint) {
-    mem.dump(0x200, 6);
+    printf("\n");
+    //mem.dump(0x200, 6);
   }
 
   if (PC == trcAddr) {

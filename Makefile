@@ -15,7 +15,7 @@ _dummy := $(shell mkdir -p build)
 
 all: $(PROGS)
 
-build/sim6502.o: src/sim6502.cpp $(COMMONINC)
+build/sim6502.o: src/sim6502.cpp $(COMMONINC) Config.h
 	g++ $(CFLAGS) $< -c -o $@
 
 build/CPU.o: src/CPU.cpp $(COMMONINC)

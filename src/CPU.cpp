@@ -20,11 +20,13 @@
 #include <CPU.h>
 #include <Opcodes.h>
 
-
+// Constructor - loads opcodes into array
 CPU::CPU(Memory & memory) : mem(memory) {
+  // set default to an invalid opcode
   for (int i = 0; i < 256; i++) {
     instset[i] = {0xFF, "---", Implied};
   }
+  // fill in the implemented opcodes
   for (auto & opc : Opcodes) {
     assert(instset[opc.opcode].opcode == 0xFF);
     instset[opc.opcode] = opc;
@@ -139,6 +141,7 @@ void CPU::disAssemble(uint16_t addr, Opcode opc, uint8_t byte, uint8_t byte2, ui
   }
 }
 
+// 1, 2 or 3 byte opcode ?
 int CPU::operands(AMode mode) {
   switch (mode) {
     case Implied:

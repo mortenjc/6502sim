@@ -50,6 +50,7 @@ public:
   }
 
   void loadBinaryFile(std::string fileName, uint16_t loadAddress) {
+    printf("Loading file %s\n", fileName.c_str());
     int fd = open(fileName.c_str(), O_RDONLY);
     if(fd < 0){
         printf("error: could not open %s\n", fileName.c_str());
