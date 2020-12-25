@@ -39,30 +39,44 @@ int (*pf)(CPU * cpu, uint8_t & reg);
 #define ASLAX   0x1E
 
 #define JSR     0x20
+#define ANDIXID 0x21
 #define BITZP   0x24
+#define ANDZP   0x25
 #define ROLZP   0x26
 #define PLP     0x28
 #define ANDI    0x29
 #define ROLACC  0x2A
 #define BITA    0x2C
+#define ANDA    0x2D
 #define ROLA    0x2E
 
 #define BMI     0x30
+#define ANDIDIX 0x31
+#define ANDZX   0x35
 #define ROLZX   0x36
 #define SEC     0x38
+#define ANDAY   0x39
+#define ANDAX   0x3D
 #define ROLAX   0x3E
 
 #define RTI     0x40
+#define EORIXID 0x41
+#define EORZP   0x45
 #define LSRZP   0x46
 #define PHA     0x48
 #define EORI    0x49
 #define LSR     0x4A
 #define JMPA    0x4C
+#define EORA    0x4D
 #define LSRA    0x4E
 
 #define BVC     0x50
+#define EORIDIX 0x51
+#define EORZX   0x55
 #define LSRZX   0x56
 #define CLINT   0x58  // namespace clash with CLI11
+#define EORAY   0x59
+#define EORAX   0x5D
 #define LSRAX   0x5E
 
 #define RTS     0x60
@@ -132,22 +146,27 @@ int (*pf)(CPU * cpu, uint8_t & reg);
 #define CMPIXID 0xC1
 #define CPYZP   0xC4
 #define CMPZP   0xC5
+#define DECZP   0xC6
 #define INY     0xC8
 #define CMPI    0xC9
 #define DEX     0xCA
 #define CPYA    0xCC
 #define CMPA    0xCD
+#define DECA    0xCE
 
 #define BNE     0xD0
 #define CMPIDIX 0xD1
 #define CMPZX   0xD5
+#define DECZX   0xD6
 #define CLD     0xD8
 #define CMPAY   0xD9
 #define CMPAX   0xDD
+#define DECAX   0xDE
 
 #define CPXI    0xE0
 #define CPXZP   0xE4
 #define SBCZP   0xE5
+#define INCZP   0xE6
 #define INX     0xE8
 #define SBCI    0xE9
 #define SBCA    0xED
@@ -157,6 +176,8 @@ int (*pf)(CPU * cpu, uint8_t & reg);
 
 #define BEQ     0xF0
 #define SBCZX   0xF5
+#define INCZX   0xF6
 #define SED     0xF8
 #define SBCAY   0xF9
 #define SBCAX   0xFD
+#define INCAX   0xFE

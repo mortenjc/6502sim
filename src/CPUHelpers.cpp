@@ -102,3 +102,15 @@ void CPU::asl(uint16_t addr) {
   mem.writeByte(addr, val);
   updateStatusZN(val);
 }
+
+void CPU::andMem(uint16_t addr) {
+  uint8_t val = mem.readByte(addr);
+  A = A & val;
+  updateStatusZN(A);
+}
+
+void CPU::eorMem(uint16_t addr) {
+  uint8_t val = mem.readByte(addr);
+  A = A ^ val;
+  updateStatusZN(A);
+}

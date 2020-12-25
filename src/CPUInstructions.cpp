@@ -282,10 +282,67 @@ bool CPU::handleInstruction(uint8_t opcode) {
       Opc.pf(this, Y);
       break;
 
+    case INCZP: { // INC memory zeropage
+      uint8_t val = mem.readByte(byte);
+      val++;
+      mem.writeByte(byte, val);
+      updateStatusZN(val);
+    }
+    break;
+
+    case INCZX: { // INC memory zeropage
+      uint8_t val = mem.readByte(uint8_t(byte + X));
+      val++;
+      mem.writeByte(uint8_t(byte + X), val);
+      updateStatusZN(val);
+    }
+    break;
+
     case INCA: { // INC memory absolute
       uint8_t val = mem.readByte(word);
       val++;
       mem.writeByte(word, val);
+      updateStatusZN(val);
+    }
+    break;
+
+    case INCAX: { // INC memory absolute
+      uint8_t val = mem.readByte(word + X);
+      val++;
+      mem.writeByte(word + X, val);
+      updateStatusZN(val);
+    }
+    break;
+
+
+    case DECZP: { // DEC memory zeropage
+      uint8_t val = mem.readByte(byte);
+      val--;
+      mem.writeByte(byte, val);
+      updateStatusZN(val);
+    }
+    break;
+
+    case DECZX: { // DEC memory zeropage
+      uint8_t val = mem.readByte(uint8_t(byte + X));
+      val--;
+      mem.writeByte(uint8_t(byte + X), val);
+      updateStatusZN(val);
+    }
+    break;
+
+    case DECA: { // DEC memory absolute X
+      uint8_t val = mem.readByte(word);
+      val--;
+      mem.writeByte(word, val);
+      updateStatusZN(val);
+    }
+    break;
+
+    case DECAX: { // DEC memory absolute X
+      uint8_t val = mem.readByte(word + X);
+      val--;
+      mem.writeByte(word + X, val);
       updateStatusZN(val);
     }
     break;
@@ -431,6 +488,34 @@ bool CPU::handleInstruction(uint8_t opcode) {
       updateStatusZN(A);
       break;
 
+    case ANDZP:
+      andMem(byte);
+      break;
+
+    case ANDZX:
+      andMem(uint8_t(byte + X));
+      break;
+
+    case ANDA:
+      andMem(word);
+      break;
+
+    case ANDAX:
+      andMem(word + X);
+      break;
+
+    case ANDAY:
+      andMem(word + Y);
+      break;
+
+    case ANDIXID:
+      andMem(mem.readWord(uint8_t(byte + X)));
+      break;
+
+    case ANDIDIX:
+      andMem(mem.readWord(byte) + Y);
+      break;
+
     case ORAI:
       A = A | byte;
       updateStatusZN(A);
@@ -439,6 +524,34 @@ bool CPU::handleInstruction(uint8_t opcode) {
     case EORI:
       A = A ^ byte;
       updateStatusZN(A);
+      break;
+
+    case EORZP:
+      eorMem(byte);
+      break;
+
+    case EORZX:
+      eorMem(uint8_t(byte + X));
+      break;
+
+    case EORA:
+      eorMem(word);
+      break;
+
+    case EORAX:
+      eorMem(word + X);
+      break;
+
+    case EORAY:
+      eorMem(word + Y);
+      break;
+
+    case EORIXID:
+      eorMem(mem.readWord(uint8_t(byte + X)));
+      break;
+
+    case EORIDIX:
+      eorMem(mem.readWord(byte) + Y);
       break;
 
     case BITZP: {

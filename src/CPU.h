@@ -171,6 +171,8 @@ private:
   void rol(uint16_t addr);
   void lsr(uint16_t addr);
   void asl(uint16_t addr);
+  void andMem(uint16_t addr);
+  void eorMem(uint16_t addr);
 
   void transfer(uint8_t & src, uint8_t & dst) {
     dst = src;
@@ -215,30 +217,44 @@ private:
     {ASLAX, "ASL", AbsoluteX,    na},
 
     {JSR,   "JSR", Absolute,     na},
+    {ANDIXID, "AND", IndexedIndirect, na},
     {BITZP, "BIT", ZeroPage,     na},
+    {ANDZP, "AND", ZeroPage,     na},
     {ROLZP, "ROL", ZeroPage,     na},
     {PLP,   "PLP", Implied,      na},
     {ANDI,  "AND", Immediate,    na},
     {ROLACC, "ROL", Accumulator, na},
     {BITA,  "BIT", Absolute,     na},
+    {ANDA,  "AND", Absolute,     na},
     {ROLA,  "ROL", Absolute,     na},
 
     {BMI,   "BMI", Relative,     na},
+    {ANDIDIX, "AND", IndirectIndexed, na},
+    {ANDZX, "AND", ZeroPageX,    na},
     {ROLZX, "ROL", ZeroPageX,    na},
     {SEC,   "SEC", Implied,      na},
+    {ANDAY, "AND", AbsoluteY,    na},
+    {ANDAX, "AND", AbsoluteX,    na},
     {ROLAX, "ROL", AbsoluteX,    na},
 
     {RTI,   "RTI", Implied,   na},
+    {EORIXID, "EOR", IndexedIndirect, na},
+    {EORZP, "EOR", ZeroPage,  na},
     {LSRZP, "LSR", ZeroPage,  na},
     {PHA,   "PHA", Implied,   na},
     {EORI,  "EOR", Immediate, na},
     {LSR,   "LSR", Implied,   na},
     {JMPA,  "JMP", Absolute,  na},
+    {EORA,  "EOR", Absolute,  na},
     {LSRA,  "LSR", Absolute,  na},
 
     {BVC,   "BVC", Relative,   na},
+    {EORIDIX, "EOR", IndirectIndexed, na},
+    {EORZX, "EOR", ZeroPageX,  na},
     {LSRZX, "LSR", ZeroPageX,  na},
     {CLINT, "CLI", Implied,    na},
+    {EORAY, "LSR", AbsoluteY,  na},
+    {EORAX, "LSR", AbsoluteX,  na},
     {LSRAX, "LSR", AbsoluteX,  na},
 
     {RTS,   "RTS", Implied,   na},
@@ -308,23 +324,28 @@ private:
     {CMPIXID, "CMP", IndexedIndirect,  na},
     {CPYZP, "CPY", ZeroPage,  na},
     {CMPZP, "CMP", ZeroPage,  na},
+    {DECZP, "DEC", ZeroPage,  na},
     {INY,   "INY", Implied,   inc},
     {CMPI,  "CMP", Immediate, na},
     {DEX,   "DEX", Implied,   dec},
     {CPYA,  "CPY", Absolute,  na},
     {CMPA,  "CMP", Absolute,  na},
+    {DECA,  "DEC", Absolute,  na},
 
     {BNE,   "BNE", Relative,  na},
     {CMPIDIX, "CMP", IndirectIndexed,  na},
     {CMPZX, "CMP", ZeroPageX, na},
+    {DECZX, "DEC", ZeroPageX, na},
     {CLD,   "CLD", Implied,   na},
     {CMPAY, "CMP", AbsoluteY, na},
     {CMPAX, "CMP", AbsoluteX, na},
+    {DECAX, "DEC", AbsoluteX, na},
 
 
     {CPXI,  "CPX", Immediate, na},
     {CPXZP, "CPX", ZeroPage,  na},
     {SBCZP, "SBC", ZeroPage,  na},
+    {INCZP, "INC", ZeroPage,  na},
     {INX,   "INX", Implied,   inc},
     {SBCI,  "SBC", Immediate, na},
     {SBCA,  "SBC", Absolute,  na},
@@ -334,9 +355,11 @@ private:
 
     {BEQ,   "BEQ", Relative,  na},
     {SBCZX, "SBC", ZeroPageX, na},
+    {INCZX, "INC", ZeroPageX, na},
     {SED,   "SED", Implied,   na},
     {SBCAY, "SBC", AbsoluteY, na},
-    {SBCAX, "SBC", AbsoluteX, na}
+    {SBCAX, "SBC", AbsoluteX, na},
+    {INCAX, "INC", AbsoluteX, na}
   };
 
 };
