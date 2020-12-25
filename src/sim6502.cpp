@@ -10,6 +10,7 @@
 //===----------------------------------------------------------------------===//
 
 #include <cstdio>
+#include <Config.h>
 #include <CPU.h>
 #include <Memory.h>
 #include <Programs.h>
@@ -19,14 +20,12 @@ Memory mem;
 CPU cpu(mem);
 
 void prgFibonacci() {
-    cpu.debugOn();
     mem.loadSnippets(fibonacci32);
     cpu.run(-1);
     mem.dump(0x0028,  4); // fibonacci32
 }
 
 void prgSieve() {
-    cpu.debugOn();
     mem.loadSnippets(sieve);
     cpu.run(-1);
     mem.dump(0x3000, 16); // sieve
@@ -35,13 +34,11 @@ void prgSieve() {
 }
 
 void prgWeekday() {
-  cpu.debugOn();
   mem.loadSnippets(weekday);
   cpu.run(-1);
 }
 
 void prgDiv32() {
-  cpu.debugOn();
   mem.loadSnippets(div32);
   cpu.run(-1);
   mem.dump(0x0020, 2);
@@ -74,36 +71,33 @@ void selectProgram(int prog) {
 int main(int argc, char * argv[])
 {
   CLI::App app{"6502 Simulator"};
+  Sim6502::Config config;
 
-  int programIndex{0};
-  uint16_t bootAddr{0x0000};
-  uint16_t traceAddr{0xFFFF};
-  std::string filename = "";
-  bool interactive{false};
-  app.add_option("-l,--load", filename, "load binary file into memory and run");
-  app.add_option("-b,--boot", bootAddr, "set CPU Program Counter");
-  app.add_option("-t,--trace", traceAddr, "enable debug at this PC address");
-  app.add_option("-p,--program", programIndex, "choose program to run");
+  app.add_option("-l,--load", config.filename, "load binary file into memory and run");
+  app.add_option("-b,--boot", config.bootAddr, "set CPU Program Counter");
+  app.add_option("-t,--trace", config.traceAddr, "enable debug at this PC address");
+  app.add_option("-p,--program", config.programIndex, "choose program to run");
+  app.add_flag("-d,--debug", config.debug, "enable debug");
 
   CLI11_PARSE(app, argc, argv);
 
-  printf("implemented opcodes: %d\n", cpu.getNumOpcodes());
-
   mem.reset();
-  if (filename != "") {
-    mem.loadBinaryFile(filename, 0x0000);
-    mem.dump(0x00,  16);
-    mem.dump(0x200, 16);
-    mem.dump(0xFFFA, 6);
-    cpu.reset(bootAddr);
-    cpu.setTraceAddr(traceAddr);
-    //cpu.debugOn();
-    cpu.run(-1);
 
-  } else {
-    cpu.reset(0x1000);
-    selectProgram(programIndex);
+  if (config.debug) {
+    cpu.debugOn();
   }
 
+  if (config.filename != "") {
+    mem.loadBinaryFile(config.filename, 0x0000);
+    cpu.reset(config.bootAddr);
+    cpu.setTraceAddr(config.traceAddr);
+
+    cpu.run(-1);
+  } else {
+    cpu.reset(0x1000);
+    selectProgram(config.programIndex);
+  }
+
+  printf("CPU instructions: %llu\n", cpu.getInstructionCount());
   return 0;
 }

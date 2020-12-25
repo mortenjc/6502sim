@@ -24,21 +24,8 @@ protected:
 };
 
 
-#define OPC2(opcode, reg, rval, val, res, C, O, Z, N)\
-   reg = rval; \
-   exec2opcmd(opcode, val);\
-   assertRegCOZN(reg, res, C, O, Z, N);
-
-// #define LDA3(opcode, reg, addr, res, Z, N)\
-//   exec3opcmd(opcode, addr & 0xff, addr >> 8);\
-//   assertRegZN(reg, res, Z, N);
-
-
-
-
-
 TEST_F(SBCTest, SBCImmediate) {
-  cpu->debugOn();
+  //cpu->debugOn();
   cpu->A = 0xFF;
   exec1opcmd(SEC);
   exec2opcmd(SBCI, 0xFF);
@@ -62,12 +49,6 @@ TEST_F(SBCTest, SBCImmediate) {
     ASSERT_EQ(cpu->Status.bits.N, 1);
   }
 }
-
-
-
-
-
-
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);

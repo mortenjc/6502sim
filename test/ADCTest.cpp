@@ -198,15 +198,6 @@ TEST_F(ADCTest, SubCarryDecimalMode) {
     ASSERT_EQ(cpu->Status.bits.C, 0);
 }
 
-TEST_F(ADCTest, AddCarryDecimalModeFTFail) {
-  cpu->debugOn();
-    exec1opcmd(SED);
-    exec1opcmd(CLC);
-    exec2opcmd(LDAI, 0x90);
-    exec2opcmd(ADCI, 0x99);
-    ASSERT_EQ(cpu->A, 0x90);
-    ASSERT_EQ(cpu->Status.bits.Z, 1);
-  }
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);

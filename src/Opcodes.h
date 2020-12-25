@@ -20,10 +20,10 @@ enum AMode { Implied,  Accumulator, Immediate,
              Indirect, IndexedIndirect, IndirectIndexed};
 
 struct Opcode {
-uint8_t opcode;
-std::string mnem;
-AMode mode;
-int (*pf)(CPU * cpu, uint8_t & reg);
+  uint8_t opcode;
+  std::string mnem;
+  AMode mode;
+  int (*pf)(CPU * cpu, uint8_t & reg);
 };
 
 #define BRK     0x00

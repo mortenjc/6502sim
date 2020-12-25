@@ -1,13 +1,7 @@
 # 6502sim
 A 6502 CPU simulator project
 
-So far only a subset (~90) of the opcodes are implemented (see Opcodes.h).
-The simulator has support for jumps and branches, loads and stores,
-increment and decrement, add and subtract with carry, set and clear flags,
-stack push operations, register transfer, logial operators and more.
-
-There is support for loading code into memory before execution (Memory.h and
-sim6502.cpp) and google test.
+All 6502 opcodes are implemented (see Opcodes.h)
 
 
 ## Building
@@ -20,24 +14,32 @@ Building the unit tests for the simulator requires google test.
 The main program is sim6502
 
 You can currently choose between loading a binary image and booting it
-at a specified address or running one of a few built-in programs.
+at a specified address or running one of a few built-in programs. Program
+execution starts at address 0x1000 unless changed with the **-b** option.
+Debug print (disassembly) is enabled with the **-d** option. If not
+enabled it can be enabled based on Program Counter (PC) value with **-t**.
 
-    ./bin/sim6502 [-l filename] [-p program] [-b boot]
+    ./bin/sim6502 [-l filename] [-p program] [-b bootaddr] [-d] [-t traceaddr]
 
 ## Unit tests
+A few unit tests have been created for the early bring-up and specific opcode
+debugging.
 
     make runtest
 
 ## Functional tests
-There is support for loading and executing functional tests based on
-the macro assembler found here:
-https://github.com/Klaus2m5/6502_65C02_functional_tests
+The simulator passes all the 6502 functional tests from
+https://github.com/Klaus2m5/6502_65C02_functional_tests which tests all instructions
+and addressing modes. The functional tests are GPL
+We have included one binary file here (6502_functional_test.bin)
+which is available under the GPL3 license.
 
-To run them
+To run the functional tests:
 
-    ./bin/sim6502 -l data/6502_functional_test.bin -b 0x400
+    ./bin/sim6502 -l data/6502_functional_test.bin -b 0x400 [-d]
 
-Not all tests pass at the moment, but things are improving ;-)
+This takes a long time with debug enabled but < 1s without on my macbook.
+
 
 ## Dependencies
 CLI11 headers were included from https://github.com/CLIUtils/CLI11
