@@ -49,6 +49,17 @@ public:
   Memory & mem;
   Opcode instset[256];
 
+
+  void stackPush(uint8_t val) {
+    mem.writeByte(getSPAddr(), val);
+    S--;
+  }
+
+  uint8_t stackPop() {
+    S++;
+    return mem.readByte(getSPAddr());
+  }
+
   // Program behaviour - debug print and breakpoints
   bool running{true};       ///< set to false when illegal/unimplemented inst.
   bool debugPrint{false};   ///< whether to print disassembly and registers
@@ -187,6 +198,7 @@ private:
 
   // https://www.masswerk.at/6502/6502_instruction_set.html
   std::vector<Opcode> Opcodes {
+    {BRK,   "BRK", Implied,   na},
     {PHP,   "PHP", Implied,   na},
     {ORAI,  "ORA", Immediate, na},
 
@@ -203,12 +215,14 @@ private:
     {BMI,   "BMI", Relative,  na},
     {SEC,   "SEC", Implied,   na},
 
+    {RTI,   "RTI", Implied,   na},
     {PHA,   "PHA", Implied,   na},
     {EORI,  "EOR", Immediate, na},
     {LSR,   "LSR", Implied,   na},
     {JMPA,  "JMP", Absolute,  na},
 
     {BVC,   "BVC", Relative,  na},
+    {CLINT, "CLI", Implied,  na},
 
     {RTS,   "RTS", Implied,   na},
     {ADCZP, "ADC", ZeroPage,  na},
@@ -219,9 +233,11 @@ private:
 
     {BVS,   "BVS", Relative,  na},
     {ADCZX, "ADC", ZeroPageX, na},
+    {SEI,   "SEI", Implied,   na},
     {ADCAY, "ADC", AbsoluteY, na},
     {ADCAX, "ADC", AbsoluteX, na},
 
+    {STAIXID, "STA", IndexedIndirect,  na},
     {STYZP, "STY", ZeroPage,  na},
     {STAZP, "STA", ZeroPage,  na},
     {STXZP, "STX", ZeroPage,  na},
@@ -234,6 +250,7 @@ private:
     {BCC,   "BCC", Relative,  na},
     {STAIDIX, "STA", IndirectIndexed,  na},
     {STYZX, "STY", ZeroPageX, na},
+    {STAZX, "STA", ZeroPageX, na},
     {STXZY, "STX", ZeroPageY, na},
     {TYA,   "TYA", Implied,   na},
     {STAAY, "STA", AbsoluteY, na},
@@ -258,6 +275,7 @@ private:
     {LDYZX, "LDY", ZeroPageX, load},
     {LDAZX, "LDA", ZeroPageX, load},
     {LDXZY, "LDX", ZeroPageY, load},
+    {CLV,   "CLV", Implied,   na},
     {LDAAY, "LDA", AbsoluteY, load},
     {TSX,   "TSX", Implied,   na},
     {LDYAX, "LDY", AbsoluteX, load},
@@ -274,7 +292,12 @@ private:
     {CMPA,  "CMP", Absolute,  na},
 
     {BNE,   "BNE", Relative,  na},
+    {CMPINIX, "CMP", IndirectIndexed,  na},
+    {CMPZX, "CMP", ZeroPageX, na},
     {CLD,   "CLD", Implied,   na},
+    {CMPAY, "CMP", AbsoluteY, na},
+    {CMPAX, "CMP", AbsoluteX, na},
+
 
     {CPXI,  "CPX", Immediate, na},
     {CPXZP, "CPX", ZeroPage,  na},

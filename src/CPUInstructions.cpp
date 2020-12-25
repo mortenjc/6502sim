@@ -44,8 +44,20 @@ bool CPU::handleInstruction(uint8_t opcode) {
        Status.bits.D = 0;
        break;
 
+     case CLV: // Clear Overflow
+       Status.bits.O = 0;
+       break;
+
      case SED: // Set Decimal
        Status.bits.D = 1;
+       break;
+
+     case CLINT: // Clear Interrupt
+       Status.bits.I = 0;
+       break;
+
+     case SEI: // Set Interrupt
+       Status.bits.I = 1;
        break;
 
     //
@@ -96,6 +108,10 @@ bool CPU::handleInstruction(uint8_t opcode) {
       mem.writeByte(byte, A);
       break;
 
+    case STAZX:
+      mem.writeByte(uint8_t(byte + X), A);
+      break;
+
     case STAA:
       mem.writeByte(word, A);
       break;
@@ -106,6 +122,10 @@ bool CPU::handleInstruction(uint8_t opcode) {
 
     case STAAY:
       mem.writeByte(word + Y, A);
+      break;
+
+    case STAIXID: // Indexed, Indirect
+      mem.writeByte(mem.readWord(uint8_t(byte + X)), A);
       break;
 
     case STAIDIX: // Indirect, Indexed
@@ -124,7 +144,8 @@ bool CPU::handleInstruction(uint8_t opcode) {
       break;
 
     case LDXZY:
-      X = mem.readByte(uint8_t(byte + Y));
+      X = mem.readByte((byte + Y) % 256);
+      assert(((byte+Y) % 256) == (uint8_t(byte + Y)));
       Opc.pf(this, X);
       break;
 
@@ -143,7 +164,7 @@ bool CPU::handleInstruction(uint8_t opcode) {
       break;
 
     case STXZY:
-      mem.writeByte(byte + Y, X);
+      mem.writeByte(uint8_t(byte + Y), X);
       break;
 
     case STXA:
@@ -284,9 +305,25 @@ bool CPU::handleInstruction(uint8_t opcode) {
       updateCompare(A, mem.readByte(byte));
       break;
 
+    case CMPZX: // Compare A register zero-page
+      updateCompare(A, mem.readByte(uint8_t(byte + X)));
+      break;
+
     case CMPA: // Compare A register Absolute
       updateCompare(A, mem.readByte(word));
       break;
+
+    case CMPAX: // Compare A register AbsoluteY
+      updateCompare(A, mem.readByte(word + X));
+      break;
+
+    case CMPAY: // Compare A register AbsoluteY
+      updateCompare(A, mem.readByte(word + Y));
+      break;
+
+    case CMPINIX: // Compare A Indirect,indexed
+    updateCompare(A, mem.readByte(mem.readWord(byte) + Y));
+    break;
 
     case CPXZP: // Compare X register zero-page
       updateCompare(X, mem.readByte(byte));
@@ -362,8 +399,9 @@ bool CPU::handleInstruction(uint8_t opcode) {
 
     /// Group: Jumps & Calls (Complete)
     case JSR:
+        PC--;
+        mem.writeWord(getSPAddr() - 1, PC);
         S -= 2;
-        mem.writeWord(getSPAddr(), PC);
         PC = word;
         break;
 
@@ -377,8 +415,8 @@ bool CPU::handleInstruction(uint8_t opcode) {
       break;
 
     case RTS:
-      PC = mem.readWord(getSPAddr());
-      S += 2;
+      S+=2;
+      PC = mem.readWord(getSPAddr() - 1) + 1;
       break;
 
 
@@ -491,9 +529,30 @@ bool CPU::handleInstruction(uint8_t opcode) {
       break;
 
 
-    //
-
+    // System functions
     case NOP:
+      break;
+
+    case BRK: {
+        PC++;
+        stackPush(PC >> 8);
+        stackPush(PC & 0xFF);
+        uint8_t oldB = Status.bits.B;
+        uint8_t oldr = Status.bits.r;
+        Status.bits.B = 1;
+        Status.bits.r = 1;
+        stackPush(Status.mask);
+        Status.bits.B = oldB;
+        Status.bits.r = oldr;
+        PC = mem.readWord(0xFFFE);
+        Status.bits.I = 1;
+      }
+      break;
+
+    case RTI:
+      Status.mask = stackPop();
+      PC = stackPop();
+      PC += stackPop() << 8;
       break;
 
     case 0xFF:  // Commands that are invalid
@@ -510,9 +569,10 @@ bool CPU::handleInstruction(uint8_t opcode) {
   }
 
   printRegisters();
-  //printf("\n");
-  if (debugPrint)
-    mem.dump(0x1fc, 6);
+  printf("\n");
+  if (debugPrint) {
+    //mem.dump(0x200, 6);
+  }
   if (addr == PC) {
     printf("loop detected, exiting ...\n");
     running = false;

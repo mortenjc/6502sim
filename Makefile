@@ -11,9 +11,9 @@ COMMONINC = src/CPU.h  src/Programs.h src/Memory.h src/Opcodes.h src/Macros.h
 COMMONOBJ = build/CPU.o build/CPUInstructions.o build/CPUHelpers.o
 
 
-_dummy := $(shell mkdir build)
+_dummy := $(shell mkdir -p build)
 
-all: $(PROGS) $(TESTPROGS)
+all: $(PROGS)
 
 build/sim6502.o: src/sim6502.cpp $(COMMONINC)
 	g++ $(CFLAGS) $< -c -o $@

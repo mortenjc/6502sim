@@ -64,8 +64,8 @@ void CPU::printRegisters() {
   if (not debugPrint)
     return;
 
-  printf(" ; 0x%04x(%03x): A:%02x  X:%02x  Y:%02x ", PC, getSPAddr(), A, X, Y);
-  printf(" [%c%c%c%c%c%c%c]",
+  printf(" ; 0x%04X(%03X): A:%02X  X:%02X  Y:%02X ", PC, getSPAddr(), A, X, Y);
+  printf(" [%c%c%c%c%c%c%c] ",
       Status.bits.C ? 'c' : ' ' ,
       Status.bits.Z ? 'z' : ' ' ,
       Status.bits.I ? 'i' : ' ' ,
@@ -82,11 +82,11 @@ void CPU::disAssemble(uint16_t addr, Opcode opc, uint8_t byte, uint8_t byte2, ui
 
   int nbops = operands(opc.mode);
   if (nbops == 1) {
-    printf("%04x %02x       ", addr, opc.opcode);
+    printf("%04X %02X       ", addr, opc.opcode);
   } else if (nbops == 2) {
-    printf("%04x %02x %02x    ", addr, opc.opcode, byte);
+    printf("%04X %02X %02X    ", addr, opc.opcode, byte);
   } else {
-    printf("%04x %02x %02x %02x ", addr, opc.opcode, byte, byte2);
+    printf("%04X %02X %02X %02X ", addr, opc.opcode, byte, byte2);
   }
 
   printf("%s ", opc.mnem.c_str());
@@ -119,7 +119,7 @@ void CPU::disAssemble(uint16_t addr, Opcode opc, uint8_t byte, uint8_t byte2, ui
       printf("$%02X,X(%3d)  ", byte, X);
       break;
     case ZeroPageY:
-      printf("$%02X,Y(%d)  ", byte, Y);
+      printf("$%02X,Y(%3d)  ", byte, Y);
       break;
     case Immediate:
       printf("#$%02X        ", byte);

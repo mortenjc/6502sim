@@ -26,6 +26,7 @@ AMode mode;
 int (*pf)(CPU * cpu, uint8_t & reg);
 };
 
+#define BRK     0x00
 #define PHP     0x08
 #define ORAI    0x09
 
@@ -42,12 +43,14 @@ int (*pf)(CPU * cpu, uint8_t & reg);
 #define BMI     0x30
 #define SEC     0x38
 
+#define RTI     0x40
 #define PHA     0x48
 #define EORI    0x49
 #define LSR     0x4A
 #define JMPA    0x4C
 
 #define BVC     0x50
+#define CLINT   0x58  // namespace clash with CLI11
 
 #define RTS     0x60
 #define ADCZP   0x65
@@ -58,9 +61,11 @@ int (*pf)(CPU * cpu, uint8_t & reg);
 
 #define BVS     0x70
 #define ADCZX   0x75
+#define SEI     0x78
 #define ADCAY   0x79
 #define ADCAX   0x7D
 
+#define STAIXID 0x81
 #define STYZP   0x84
 #define STAZP   0x85
 #define STXZP   0x86
@@ -73,6 +78,7 @@ int (*pf)(CPU * cpu, uint8_t & reg);
 #define BCC     0x90
 #define STAIDIX 0x91
 #define STYZX   0x94
+#define STAZX   0x95
 #define STXZY   0x96
 #define TYA     0x98
 #define STAAY   0x99
@@ -97,6 +103,7 @@ int (*pf)(CPU * cpu, uint8_t & reg);
 #define LDYZX   0xB4
 #define LDAZX   0xB5
 #define LDXZY   0xB6
+#define CLV     0xB8
 #define LDAAY   0xB9
 #define TSX     0xBA
 #define LDYAX   0xBC
@@ -113,7 +120,11 @@ int (*pf)(CPU * cpu, uint8_t & reg);
 #define CMPA    0xCD
 
 #define BNE     0xD0
+#define CMPINIX 0xD1
+#define CMPZX   0xD5
 #define CLD     0xD8
+#define CMPAY   0xD9
+#define CMPAX   0xDD
 
 #define CPXI    0xE0
 #define CPXZP   0xE4

@@ -90,10 +90,13 @@ int main(int argc, char * argv[])
   mem.reset();
   if (filename != "") {
     mem.loadBinaryFile(filename, 0x0000);
+    mem.dump(0x00,  16);
+    mem.dump(0x200, 16);
+    mem.dump(0xFFFA, 6);
     cpu.reset(bootAddr);
     cpu.debugOn();
     cpu.run(-1);
-    mem.dump(0x200, 4);
+
   } else {
     selectProgram(programIndex);
   }
