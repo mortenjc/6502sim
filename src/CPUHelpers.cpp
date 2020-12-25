@@ -29,7 +29,7 @@ int CPU::addcarry(uint8_t & reg, uint8_t val) {
   Status.bits.O = 0; // Clear overflow
   Status.bits.N = 0;
   Status.bits.Z = 0;
-  Status.bits.C = 0;
+
 
   if ((tmp & 0xFF) == 0x00)
     Status.bits.Z = 1;
@@ -46,7 +46,7 @@ int CPU::addcarry(uint8_t & reg, uint8_t val) {
     if (tmp > 0x99) {
       tmp += 96;
     }
-
+   Status.bits.C = 0;
     if (tmp > 0x99) {
       Status.bits.C = 1;  // Set carry
     }
@@ -59,6 +59,7 @@ int CPU::addcarry(uint8_t & reg, uint8_t val) {
       Status.bits.O = 1;
     }
 
+    Status.bits.C = 0;
     if (tmp > 255) {
       Status.bits.C = 1; // Set carry
     }
@@ -93,7 +94,7 @@ int CPU::subcarry(uint8_t & unused, uint8_t M) {
 		if (tmp > 0x99) {
 			tmp -= 0x60;
 		}
-	} 
+	}
 
   Status.bits.C = 0;
   if (tmp < 0x100)

@@ -163,6 +163,12 @@ TEST_F(ADCTest, AddCarryDecimalMode) {
     ASSERT_EQ(cpu->A, 0x02);
     ASSERT_EQ(cpu->Status.bits.C, 0);
 
+    exec2opcmd(LDAI, 0x09);
+    exec2opcmd(ADCI, 0x01);
+    ASSERT_EQ(cpu->A, 0x10);
+    ASSERT_EQ(cpu->Status.bits.C, 0);
+
+
     exec2opcmd(LDAI, 0x98);
     exec2opcmd(ADCI, 0x01);
     ASSERT_EQ(cpu->A, 0x99);
