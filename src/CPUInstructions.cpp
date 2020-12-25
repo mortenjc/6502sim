@@ -93,7 +93,7 @@ bool CPU::handleInstruction(uint8_t opcode) {
       break;
 
     case LDAIXID: // Indexed, Indirect ?
-      A = mem.readByte(mem.readWord(byte + X));
+      A = mem.readByte(mem.readWord(uint8_t(byte + X)));
       Opc.pf(this, A);
       break;
 
@@ -321,7 +321,11 @@ bool CPU::handleInstruction(uint8_t opcode) {
       updateCompare(A, mem.readByte(word + Y));
       break;
 
-    case CMPINIX: // Compare A Indirect,indexed
+    case CMPIXID: // Compare A Indexed, indirect
+    updateCompare(A, mem.readByte(mem.readWord(uint8_t(byte + X))));
+    break;
+
+    case CMPIDIX: // Compare A Indirect,indexed
     updateCompare(A, mem.readByte(mem.readWord(byte) + Y));
     break;
 
@@ -455,22 +459,105 @@ bool CPU::handleInstruction(uint8_t opcode) {
     }
     break;
 
+
     // Shifts
+    case ASLACC: {
+        Status.bits.C = (A >> 7);
+        A = A << 1;
+        updateStatusZN(A);
+      }
+      break;
+
+    case ASLZP:
+      asl(byte);
+      break;
+
+
+    case ASLZX:
+      asl(uint8_t(byte + X));
+      break;
+
+    case ASLA:
+      asl(word);
+      break;
+
+    case ASLAX:
+      asl(word + X);
+      break;
+
     case LSR:
       Status.bits.C = A & 0x01;
       A = A >> 1;
       updateStatusZN(A);
       break;
 
-    case ROLZP: {
-        uint8_t val = mem.readByte(byte);
-        Status.bits.C = (val >> 7); // bit 7 -> Carry
-        val = val << 1;
-        mem.writeByte(byte, val);
+    case LSRZP:
+      lsr(byte);
+      break;
+
+    case LSRZX:
+      lsr(uint8_t(byte + X));
+      break;
+
+    case LSRA:
+      lsr(word);
+      break;
+
+    case LSRAX:
+      lsr(word + X);
+      break;
+
+    case ROLACC: {
+        uint8_t oldCarry = Status.bits.C;
+        Status.bits.C = (A >> 7); // bit 7 -> Carry
+        A = A << 1;
+        A = A + oldCarry;
         updateStatusZN(A);
       }
       break;
 
+    case ROLZP:
+      rol(byte);
+      break;
+
+    case ROLZX:
+      rol(uint8_t(byte + X));
+      break;
+
+    case ROLA:
+      rol(word);
+      break;
+
+    case ROLAX:
+      rol(word + X);
+      break;
+
+    case RORACC: {
+        uint8_t oldCarry = Status.bits.C;
+        Status.bits.C = (A &0x01); // bit 0 -> Carry
+        A = A >> 1;
+        if (oldCarry) {
+          A = A + 128;
+        }
+        updateStatusZN(A);
+      }
+      break;
+
+    case RORZP:
+      ror(byte);
+      break;
+
+    case RORZX:
+      ror(uint8_t(byte + X));
+      break;
+
+    case RORA:
+      ror(word);
+      break;
+
+    case RORAX:
+      ror(word + X);
+      break;
 
     //
     // Register Transfers (Complete)
@@ -569,9 +656,9 @@ bool CPU::handleInstruction(uint8_t opcode) {
   }
 
   printRegisters();
-  printf("\n");
+  //printf("\n");
   if (debugPrint) {
-    //mem.dump(0x200, 6);
+    mem.dump(0x200, 6);
   }
   if (addr == PC) {
     printf("loop detected, exiting ...\n");

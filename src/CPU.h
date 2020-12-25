@@ -167,6 +167,10 @@ private:
   int addcarry(uint8_t & reg, uint8_t val);
   int subcarry(uint8_t & unused, uint8_t M);
   int16_t jumpRelative(uint8_t val);
+  void ror(uint16_t addr);
+  void rol(uint16_t addr);
+  void lsr(uint16_t addr);
+  void asl(uint16_t addr);
 
   void transfer(uint8_t & src, uint8_t & dst) {
     dst = src;
@@ -198,44 +202,62 @@ private:
 
   // https://www.masswerk.at/6502/6502_instruction_set.html
   std::vector<Opcode> Opcodes {
-    {BRK,   "BRK", Implied,   na},
-    {PHP,   "PHP", Implied,   na},
-    {ORAI,  "ORA", Immediate, na},
+    {BRK,    "BRK", Implied,     na},
+    {ASLZP,  "ASL", ZeroPage,    na},
+    {PHP,    "PHP", Implied,     na},
+    {ORAI,   "ORA", Immediate,   na},
+    {ASLACC, "ASL", Accumulator, na},
+    {ASLA,   "ASL", Absolute,    na},
 
-    {BPL,   "BPL", Relative,  na},
-    {CLC,   "CLC", Implied,   na},
+    {BPL,   "BPL", Relative,     na},
+    {ASLZX, "ASL", ZeroPageX,    na},
+    {CLC,   "CLC", Implied,      na},
+    {ASLAX, "ASL", AbsoluteX,    na},
 
-    {JSR,   "JSR", Absolute,  na},
-    {BITZP, "BIT", ZeroPage,  na},
-    {ROLZP, "ROL", ZeroPage,  na},
-    {PLP,   "PLP", Implied,   na},
-    {ANDI,  "AND", Immediate, na},
-    {BITA,  "BIT", Absolute,  na},
+    {JSR,   "JSR", Absolute,     na},
+    {BITZP, "BIT", ZeroPage,     na},
+    {ROLZP, "ROL", ZeroPage,     na},
+    {PLP,   "PLP", Implied,      na},
+    {ANDI,  "AND", Immediate,    na},
+    {ROLACC, "ROL", Accumulator, na},
+    {BITA,  "BIT", Absolute,     na},
+    {ROLA,  "ROL", Absolute,     na},
 
-    {BMI,   "BMI", Relative,  na},
-    {SEC,   "SEC", Implied,   na},
+    {BMI,   "BMI", Relative,     na},
+    {ROLZX, "ROL", ZeroPageX,    na},
+    {SEC,   "SEC", Implied,      na},
+    {ROLAX, "ROL", AbsoluteX,    na},
 
     {RTI,   "RTI", Implied,   na},
+    {LSRZP, "LSR", ZeroPage,  na},
     {PHA,   "PHA", Implied,   na},
     {EORI,  "EOR", Immediate, na},
     {LSR,   "LSR", Implied,   na},
     {JMPA,  "JMP", Absolute,  na},
+    {LSRA,  "LSR", Absolute,  na},
 
-    {BVC,   "BVC", Relative,  na},
-    {CLINT, "CLI", Implied,  na},
+    {BVC,   "BVC", Relative,   na},
+    {LSRZX, "LSR", ZeroPageX,  na},
+    {CLINT, "CLI", Implied,    na},
+    {LSRAX, "LSR", AbsoluteX,  na},
 
     {RTS,   "RTS", Implied,   na},
     {ADCZP, "ADC", ZeroPage,  na},
+    {RORZP, "ROR", ZeroPage,  na},
     {PLA,   "PLA", Implied,   na},
     {ADCI,  "ADC", Immediate, na},
+    {RORACC, "ROR", Accumulator,  na},
     {JMPI,  "JMP", Indirect,  na},
     {ADCA,  "ADC", Absolute,  na},
+    {RORA,  "ROR", Absolute,  na},
 
     {BVS,   "BVS", Relative,  na},
     {ADCZX, "ADC", ZeroPageX, na},
+    {RORZX, "ROR", ZeroPageX, na},
     {SEI,   "SEI", Implied,   na},
     {ADCAY, "ADC", AbsoluteY, na},
     {ADCAX, "ADC", AbsoluteX, na},
+    {RORAX, "ROR", AbsoluteX, na},
 
     {STAIXID, "STA", IndexedIndirect,  na},
     {STYZP, "STY", ZeroPage,  na},
@@ -283,6 +305,7 @@ private:
     {LDXAY, "LDX", AbsoluteY, load},
 
     {CPYI,  "CPY", Immediate, na},
+    {CMPIXID, "CMP", IndexedIndirect,  na},
     {CPYZP, "CPY", ZeroPage,  na},
     {CMPZP, "CMP", ZeroPage,  na},
     {INY,   "INY", Implied,   inc},
@@ -292,7 +315,7 @@ private:
     {CMPA,  "CMP", Absolute,  na},
 
     {BNE,   "BNE", Relative,  na},
-    {CMPINIX, "CMP", IndirectIndexed,  na},
+    {CMPIDIX, "CMP", IndirectIndexed,  na},
     {CMPZX, "CMP", ZeroPageX, na},
     {CLD,   "CLD", Implied,   na},
     {CMPAY, "CMP", AbsoluteY, na},

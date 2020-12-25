@@ -61,3 +61,44 @@ int CPU::subcarry(uint8_t & unused, uint8_t M) {
   updateStatusZN(A);
   return 0;
 }
+
+
+void CPU::ror(uint16_t addr) {
+  uint8_t val = mem.readByte(addr);
+  uint8_t oldCarry = Status.bits.C;
+  Status.bits.C = (val & 0x01); // bit 0 -> Carry
+  val = val >> 1;
+  if (oldCarry) {
+    val = val + 128;
+  }
+  mem.writeByte(addr, val);
+  updateStatusZN(val);
+}
+
+
+void CPU::rol(uint16_t addr) {
+  uint8_t val = mem.readByte(addr);
+  uint8_t oldCarry = Status.bits.C;
+  Status.bits.C = (val >> 7); // bit 7 -> Carry
+  val = val << 1;
+  val = val + oldCarry;
+  mem.writeByte(addr, val);
+  updateStatusZN(val);
+}
+
+
+void CPU::lsr(uint16_t addr) {
+  uint8_t val = mem.readByte(addr);
+  Status.bits.C = val & 0x01;
+  val = val >> 1;
+  mem.writeByte(addr, val);
+  updateStatusZN(val);
+}
+
+void CPU::asl(uint16_t addr) {
+  uint8_t val = mem.readByte(addr);
+  Status.bits.C = (val >> 7);
+  val = val << 1;
+  mem.writeByte(addr, val);
+  updateStatusZN(val);
+}
