@@ -3,7 +3,7 @@
 PROGS = bin/sim6502
 TESTPROGS = bin/cputest bin/branchtest bin/ldatest bin/adctest bin/sbctest
 
-CFLAGS = -I. -I src -I test --std=c++11
+CFLAGS = -O3 -I. -I src -I test --std=c++11
 TESTFLAGS = -I googletest/googletest/include/
 TESTLDFLAGS = -L googletest/build/lib -lgtest
 

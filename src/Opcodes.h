@@ -27,15 +27,22 @@ int (*pf)(CPU * cpu, uint8_t & reg);
 };
 
 #define BRK     0x00
+#define ORAIXID 0x01
+#define ORAZP   0x05
 #define ASLZP   0x06
 #define PHP     0x08
 #define ORAI    0x09
 #define ASLACC  0x0A
+#define ORAA    0x0D
 #define ASLA    0x0E
 
 #define BPL     0x10
+#define ORAIDIX 0x11
+#define ORAZX   0x15
 #define ASLZX   0x16
 #define CLC     0x18
+#define ORAAY   0x19
+#define ORAAX   0x1D
 #define ASLAX   0x1E
 
 #define JSR     0x20
@@ -80,6 +87,7 @@ int (*pf)(CPU * cpu, uint8_t & reg);
 #define LSRAX   0x5E
 
 #define RTS     0x60
+#define ADCIXID 0x61
 #define ADCZP   0x65
 #define RORZP   0x66
 #define PLA     0x68
@@ -90,6 +98,7 @@ int (*pf)(CPU * cpu, uint8_t & reg);
 #define RORA    0x6E
 
 #define BVS     0x70
+#define ADCIDIX 0x71
 #define ADCZX   0x75
 #define RORZX   0x76
 #define SEI     0x78
@@ -164,6 +173,7 @@ int (*pf)(CPU * cpu, uint8_t & reg);
 #define DECAX   0xDE
 
 #define CPXI    0xE0
+#define SBCIXID 0xE1
 #define CPXZP   0xE4
 #define SBCZP   0xE5
 #define INCZP   0xE6
@@ -175,6 +185,7 @@ int (*pf)(CPU * cpu, uint8_t & reg);
 #define CPXA    0xEC
 
 #define BEQ     0xF0
+#define SBCIDIX 0xF1
 #define SBCZX   0xF5
 #define INCZX   0xF6
 #define SED     0xF8

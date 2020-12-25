@@ -68,6 +68,7 @@ public:
   uint16_t bpAddr;          ///< break point PC address
   uint8_t bpA, bpX, bpY;    ///< break point register values
   uint64_t instructions{0}; ///< instruction count
+  uint16_t trcAddr{0xFFFF}; ///< start trace PC address
 
 
   // Load instructions into array, reset cpu registers
@@ -76,6 +77,10 @@ public:
   // Enables disassembly and register printing
   void debugOn() { debugPrint = true; }
 
+
+  void setTraceAddr(uint16_t addr) {
+    trcAddr = addr;
+  }
 
   void setBreakpointAddr(uint16_t addr) {
     bpAddrCheck = true;
@@ -173,6 +178,7 @@ private:
   void asl(uint16_t addr);
   void andMem(uint16_t addr);
   void eorMem(uint16_t addr);
+  void oraMem(uint16_t addr);
 
   void transfer(uint8_t & src, uint8_t & dst) {
     dst = src;
@@ -205,15 +211,22 @@ private:
   // https://www.masswerk.at/6502/6502_instruction_set.html
   std::vector<Opcode> Opcodes {
     {BRK,    "BRK", Implied,     na},
+    {ORAIXID, "ORA", IndexedIndirect, na},
+    {ORAZP,  "ORA", ZeroPage,    na},
     {ASLZP,  "ASL", ZeroPage,    na},
     {PHP,    "PHP", Implied,     na},
     {ORAI,   "ORA", Immediate,   na},
     {ASLACC, "ASL", Accumulator, na},
+    {ORAA,   "ORA", Absolute,    na},
     {ASLA,   "ASL", Absolute,    na},
 
     {BPL,   "BPL", Relative,     na},
+    {ORAIDIX, "ORA", IndirectIndexed, na},
+    {ORAZX, "ORA", ZeroPageX,    na},
     {ASLZX, "ASL", ZeroPageX,    na},
     {CLC,   "CLC", Implied,      na},
+    {ORAAY, "ORA", AbsoluteY,    na},
+    {ORAAX, "ORA", AbsoluteX,    na},
     {ASLAX, "ASL", AbsoluteX,    na},
 
     {JSR,   "JSR", Absolute,     na},
@@ -258,6 +271,7 @@ private:
     {LSRAX, "LSR", AbsoluteX,  na},
 
     {RTS,   "RTS", Implied,   na},
+    {ADCIXID, "ADC", IndexedIndirect,  na},
     {ADCZP, "ADC", ZeroPage,  na},
     {RORZP, "ROR", ZeroPage,  na},
     {PLA,   "PLA", Implied,   na},
@@ -268,6 +282,7 @@ private:
     {RORA,  "ROR", Absolute,  na},
 
     {BVS,   "BVS", Relative,  na},
+    {ADCIDIX, "EOR", IndirectIndexed, na},
     {ADCZX, "ADC", ZeroPageX, na},
     {RORZX, "ROR", ZeroPageX, na},
     {SEI,   "SEI", Implied,   na},
@@ -343,6 +358,7 @@ private:
 
 
     {CPXI,  "CPX", Immediate, na},
+    {SBCIXID, "SCB", IndexedIndirect,  na},
     {CPXZP, "CPX", ZeroPage,  na},
     {SBCZP, "SBC", ZeroPage,  na},
     {INCZP, "INC", ZeroPage,  na},
@@ -354,6 +370,7 @@ private:
     {CPXA,  "CPX", Absolute,  na},
 
     {BEQ,   "BEQ", Relative,  na},
+    {SBCIDIX, "SBC", IndirectIndexed,  na},
     {SBCZX, "SBC", ZeroPageX, na},
     {INCZX, "INC", ZeroPageX, na},
     {SED,   "SED", Implied,   na},

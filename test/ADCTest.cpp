@@ -153,6 +153,55 @@ TEST_F(ADCTest, AddCarryCarrySet) {
   }
 }
 
+TEST_F(ADCTest, AddCarryDecimalMode) {
+    exec1opcmd(SED);
+    exec2opcmd(LDAI, 0x00);
+    exec2opcmd(ADCI, 0x01);
+    ASSERT_EQ(cpu->A, 0x01);
+    ASSERT_EQ(cpu->Status.bits.C, 0);
+    exec2opcmd(ADCI, 0x01);
+    ASSERT_EQ(cpu->A, 0x02);
+    ASSERT_EQ(cpu->Status.bits.C, 0);
+
+    exec2opcmd(LDAI, 0x98);
+    exec2opcmd(ADCI, 0x01);
+    ASSERT_EQ(cpu->A, 0x99);
+    ASSERT_EQ(cpu->Status.bits.C, 0);
+    exec2opcmd(ADCI, 0x01); // wrap from 0x99 to 0x00
+    ASSERT_EQ(cpu->A, 0x00);
+    ASSERT_EQ(cpu->Status.bits.C, 1);
+}
+
+TEST_F(ADCTest, SubCarryDecimalMode) {
+    exec1opcmd(SED);
+    exec1opcmd(SEC);
+    exec2opcmd(LDAI, 0x99);
+    exec2opcmd(SBCI, 0x01);
+    ASSERT_EQ(cpu->A, 0x98);
+    ASSERT_EQ(cpu->Status.bits.C, 1);
+    exec2opcmd(SBCI, 0x01);
+    ASSERT_EQ(cpu->A, 0x97);
+    ASSERT_EQ(cpu->Status.bits.C, 1);
+
+    exec2opcmd(LDAI, 0x01);
+    exec2opcmd(SBCI, 0x01);
+    ASSERT_EQ(cpu->A, 0x00);
+    ASSERT_EQ(cpu->Status.bits.C, 1);
+    exec2opcmd(SBCI, 0x01); // wrap from 0x00 to 0x99
+    ASSERT_EQ(cpu->A, 0x99);
+    ASSERT_EQ(cpu->Status.bits.C, 0);
+}
+
+TEST_F(ADCTest, AddCarryDecimalModeFTFail) {
+  cpu->debugOn();
+    exec1opcmd(SED);
+    exec1opcmd(CLC);
+    exec2opcmd(LDAI, 0x90);
+    exec2opcmd(ADCI, 0x99);
+    ASSERT_EQ(cpu->A, 0x90);
+    ASSERT_EQ(cpu->Status.bits.Z, 1);
+  }
+
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

@@ -186,13 +186,12 @@ std::vector<Snippet> weekday {
   }},
 
    // Main program - load Y, X, A and call Weekday routine
-   // I seem to get an off by one on this compared to:
    // 2 may 1967 - tuesday (2)
    // 20 december 2020 - sunday (0)
   {0x1000, "main()", {
-    LDYI, (1967 - 1900),     // 2020   (2020 - 1900)
-    LDXI,  5,                // Month
-    LDAI,  2,                // Day
+    LDYI, (2020 - 1900),     // 2020   (2020 - 1900)
+    LDXI,  12,                // Month
+    LDAI,  20,                // Day
     JSR,  0x00, 0x15,        // to weekday()
     NOP,
   }},

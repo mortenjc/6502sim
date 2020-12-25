@@ -238,6 +238,14 @@ bool CPU::handleInstruction(uint8_t opcode) {
       addcarry(A, mem.readByte(word + Y));
       break;
 
+    case ADCIXID: // Add with carry - Indexed, indirect
+      addcarry(A, mem.readByte(mem.readWord(uint8_t(byte + X))));
+      break;
+
+    case ADCIDIX: // Add with carry - Indexed, indirect
+      addcarry(A, mem.readByte(mem.readWord(byte) + Y));
+      break;
+
     // Subtract
     case SBCI: // Subtract with carry - Imm
       subcarry(A, byte);
@@ -263,6 +271,13 @@ bool CPU::handleInstruction(uint8_t opcode) {
       subcarry(A, mem.readByte(word + Y));
       break;
 
+    case SBCIXID: // Add with carry - Indexed, indirect
+      subcarry(A, mem.readByte(mem.readWord(uint8_t(byte + X))));
+      break;
+
+    case SBCIDIX: // Add with carry - Indexed, indirect
+      subcarry(A, mem.readByte(mem.readWord(byte) + Y));
+      break;
 
     //
     // Increment
@@ -521,6 +536,35 @@ bool CPU::handleInstruction(uint8_t opcode) {
       updateStatusZN(A);
       break;
 
+    case ORAZP:
+      oraMem(byte);
+      break;
+
+    case ORAZX:
+      oraMem(uint8_t(byte + X));
+      break;
+
+    case ORAA:
+      oraMem(word);
+      break;
+
+    case ORAAX:
+      oraMem(word + X);
+      break;
+
+    case ORAAY:
+      oraMem(word + Y);
+      break;
+
+    case ORAIXID:
+      oraMem(mem.readWord(uint8_t(byte + X)));
+      break;
+
+    case ORAIDIX:
+      oraMem(mem.readWord(byte) + Y);
+      break;
+
+
     case EORI:
       A = A ^ byte;
       updateStatusZN(A);
@@ -773,6 +817,11 @@ bool CPU::handleInstruction(uint8_t opcode) {
   if (debugPrint) {
     mem.dump(0x200, 6);
   }
+
+  if (PC == trcAddr) {
+    debugOn();
+  }
+
   if (addr == PC) {
     printf("loop detected, exiting ...\n");
     running = false;

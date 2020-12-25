@@ -77,10 +77,12 @@ int main(int argc, char * argv[])
 
   int programIndex{0};
   uint16_t bootAddr{0x0000};
+  uint16_t traceAddr{0xFFFF};
   std::string filename = "";
   bool interactive{false};
   app.add_option("-l,--load", filename, "load binary file into memory and run");
   app.add_option("-b,--boot", bootAddr, "set CPU Program Counter");
+  app.add_option("-t,--trace", traceAddr, "enable debug at this PC address");
   app.add_option("-p,--program", programIndex, "choose program to run");
 
   CLI11_PARSE(app, argc, argv);
@@ -94,10 +96,12 @@ int main(int argc, char * argv[])
     mem.dump(0x200, 16);
     mem.dump(0xFFFA, 6);
     cpu.reset(bootAddr);
-    cpu.debugOn();
+    cpu.setTraceAddr(traceAddr);
+    //cpu.debugOn();
     cpu.run(-1);
 
   } else {
+    cpu.reset(0x1000);
     selectProgram(programIndex);
   }
 
