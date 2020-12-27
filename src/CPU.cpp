@@ -20,7 +20,7 @@
 #include <CPU.h>
 #include <Opcodes.h>
 
-// Constructor - loads opcodes into array
+// Constructor
 CPU::CPU(Memory & memory) : mem(memory) {
   // set default to an invalid opcode
   for (int i = 0; i < 256; i++) {
@@ -32,6 +32,7 @@ CPU::CPU(Memory & memory) : mem(memory) {
     instset[opc.opcode] = opc;
   }
 };
+
 
 // Sets registers and flags to zero
 // Sets Stack pointer (SP) to default (0x1FF)

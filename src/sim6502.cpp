@@ -67,18 +67,17 @@ void selectProgram(int prog) {
   }
 }
 
-
 int main(int argc, char * argv[])
 {
   CLI::App app{"6502 Simulator"};
   Sim6502::Config config;
 
   app.add_option("-l,--load", config.filename, "load binary file into memory and run");
+  app.add_option("-a,--laddr", config.loadAddr, "strt loading at address");
   app.add_option("-b,--boot", config.bootAddr, "set CPU Program Counter");
   app.add_option("-t,--trace", config.traceAddr, "enable debug at this PC address");
   app.add_option("-p,--program", config.programIndex, "choose program to run");
   app.add_flag("-d,--debug", config.debug, "enable debug");
-
   CLI11_PARSE(app, argc, argv);
 
   mem.reset();
@@ -88,10 +87,9 @@ int main(int argc, char * argv[])
   }
 
   if (config.filename != "") {
-    mem.loadBinaryFile(config.filename, 0x0000);
+    mem.loadBinaryFile(config.filename, config.loadAddr);
     cpu.reset(config.bootAddr);
     cpu.setTraceAddr(config.traceAddr);
-
     cpu.run(-1);
   } else {
     cpu.reset(0x1000);

@@ -1,6 +1,6 @@
 
 
-PROGS = bin/sim6502
+PROGS = bin/vic20 bin/sim6502
 TESTPROGS = bin/cputest bin/branchtest bin/ldatest bin/adctest bin/sbctest
 
 CFLAGS = -O3 -I. -I src -I test --std=c++11
@@ -15,7 +15,7 @@ _dummy := $(shell mkdir -p build)
 
 all: $(PROGS)
 
-build/sim6502.o: src/sim6502.cpp $(COMMONINC) Config.h
+build/sim6502.o: src/sim6502.cpp $(COMMONINC) src/Config.h
 	g++ $(CFLAGS) $< -c -o $@
 
 build/CPU.o: src/CPU.cpp $(COMMONINC)
@@ -30,8 +30,8 @@ build/CPUHelpers.o: src/CPUHelpers.cpp $(COMMONINC)
 bin/sim6502: build/sim6502.o $(COMMONOBJ)
 	g++ $(CFLAGS) build/sim6502.o $(COMMONOBJ) -o $@
 
-
-
+bin/vic20: src/vic20/main.cpp $(COMMONOBJ) src/vic20/vic20.h
+	g++ $(CFLAGS) src/vic20/main.cpp $(COMMONOBJ) -o $@ -lncurses
 
 # Test targets
 test: $(TESTPROGS)

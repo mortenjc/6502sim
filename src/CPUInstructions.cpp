@@ -815,8 +815,8 @@ bool CPU::handleInstruction(uint8_t opcode) {
   printRegisters();
 
   if (debugPrint) {
-    printf("\n");
-    //mem.dump(0x200, 6);
+    // printf("\n");
+    mem.dump(0x1000, 32);
   }
 
   if (PC == trcAddr) {

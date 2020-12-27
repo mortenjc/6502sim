@@ -43,6 +43,8 @@ public:
   // return the number of executed instructions
   uint64_t getInstructionCount() { return instructions; }
 
+  void clearInstructionCount() { instructions = 0; }
+
 
   void setTraceAddr(uint16_t addr) {
     trcAddr = addr;

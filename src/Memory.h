@@ -63,9 +63,9 @@ public:
   }
 
   void dump(uint16_t address, uint16_t bytes) {
-    printf("%04x: ", address);
+    printf("%04X: ", address);
     for (int i = 0; i < bytes; i++) {
-      printf("0x%02x, ", mem[address + i]);
+      printf("%02X ", mem[address + i]);
     }
     printf("\n");
   }
