@@ -40,6 +40,13 @@ To run the functional tests:
 
 This takes a long time with debug enabled but < 1s without on my macbook.
 
+## VIC-20
+Based on the roms in src/vic20/roms I was able to build a bootable cpu image
+for a VIC-20 computer. It *does* run but have very primitive keyboard and
+screen graphics support. To run it:
+
+    ./bin/vic20
+
 
 ## Dependencies
 CLI11 headers were included from https://github.com/CLIUtils/CLI11
