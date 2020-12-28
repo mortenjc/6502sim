@@ -47,8 +47,17 @@ void prgDiv32() {
   mem.dump(0x0027, 1);
 }
 
-void selectProgram(int prog) {
-  switch (prog) {
+void functional() {
+  printf("Starting functional tests.\n");
+  printf("Success loop is detected at PC 0x3469\n");
+  mem.loadBinaryFile("data/6502_functional_test.bin", 0x0000);
+  cpu.reset(0x400);
+  cpu.setTraceAddr(0x3469);
+  cpu.run(-1);
+}
+
+void selectProgram(Sim6502::Config & cfg) {
+  switch (cfg.programIndex) {
     case 0:
       prgFibonacci();
       break;
@@ -61,11 +70,15 @@ void selectProgram(int prog) {
     case 3:
       prgDiv32();
       break;
+    case 4:
+      functional();
+      break;
     default:
-      printf("Program %d is not available\n", prog);
+      printf("Program %d is not available\n", cfg.programIndex);
       break;
   }
 }
+
 
 int main(int argc, char * argv[])
 {
@@ -93,9 +106,9 @@ int main(int argc, char * argv[])
     cpu.run(-1);
   } else {
     cpu.reset(0x1000);
-    selectProgram(config.programIndex);
+    selectProgram(config);
   }
 
-  printf("CPU instructions: %llu\n", cpu.getInstructionCount());
+  //printf("CPU instructions: %llu\n", cpu.getInstructionCount());
   return 0;
 }

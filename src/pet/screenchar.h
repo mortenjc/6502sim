@@ -9,6 +9,7 @@
 /// original vic-20 ROMs and some custom and reverse engineered code.
 //===----------------------------------------------------------------------===//
 
+// Routine used to decode screen memory to ASCII chars
 char getChar(uint8_t charcode) {
   switch (charcode) {
     case 0x00: return '@'; break;

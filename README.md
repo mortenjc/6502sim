@@ -38,15 +38,30 @@ To run the functional tests:
 
     ./bin/sim6502 -l data/6502_functional_test.bin -b 0x400 [-d]
 
+or automatically:
+    ./bin/sim6502
+
 This takes a long time with debug enabled but < 1s without on my macbook.
 
-## VIC-20
-Based on the roms in src/vic20/roms I was able to build a bootable cpu image
-for a VIC-20 computer. It *does* run but have very primitive keyboard and
-screen graphics support. To run it:
+Upon errors (currently there are none) the functional tests enters a loop which
+is detected and causes the simulation to stop. The PC can then be inspected. Please
+refer to
+https://github.com/Klaus2m5/6502_65C02_functional_tests/blob/master/bin_files/6502_functional_test.lst
+to identify which test is currently failing.
+
+## VIC-20 and Commodore 64
+Based on the roms in src/pet/vic20 and src/pet/c64 I was able to build bootable
+rom images for the VIC-20 and COmmodore 64 computers. They *do* run but have very
+primitive keyboard support and only display ascii characters.
+
+ROMs were downloaded from: http://www.zimmers.net/anonftp/pub/cbm/firmware/computers/
+
+## Running
 
     ./bin/vic20
 
+
+    ./bin/c64
 
 ## Dependencies
 CLI11 headers were included from https://github.com/CLIUtils/CLI11

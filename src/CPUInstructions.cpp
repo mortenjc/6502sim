@@ -824,7 +824,7 @@ bool CPU::handleInstruction(uint8_t opcode) {
   }
 
   if (addr == PC) {
-    printf("loop detected, exiting ...\n");
+    printf("loop detected (PC: %04X), exiting ...\n", PC);
     running = false;
   }
 

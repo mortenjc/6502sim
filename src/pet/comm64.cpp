@@ -13,7 +13,7 @@
 #include <ncurses.h>
 #include <CPU.h>
 #include <Memory.h>
-#include <vic20/vic20.h>
+#include <pet/screenchar.h>
 
 Memory mem;
 CPU cpu(mem);
