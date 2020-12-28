@@ -26,17 +26,19 @@ int main(int argc, char *argv[]) {
   //cpu.debugOn();
   //cpu.setTraceAddr(config.traceAddr);
 
-  Hooks vic(mem, 23,24);
+  Hooks sys(mem, 23,24);
 
   while (1) {
     cpu.clearInstructionCount();
     cpu.run(100000);
 
-    vic.printScreen(22, 23, 0x1000);
+    // just to align lines for vic20 and c64
+
+    sys.printScreen(22, 23, 0x1000);
     usleep(10000);
 
-    if (vic.getChar(ch)) { // a key was pressed
-      if (vic.handleKey(ch)) {
+    if (sys.getChar(ch)) { // a key was pressed
+      if (sys.handleKey(ch)) {
         return 0;
       }
     }

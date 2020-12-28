@@ -3,9 +3,9 @@
 ///
 /// \file
 ///
-/// \brief Rudimentary VIC-20 emulation
+/// \brief Rudimentary C64 emulation
 ///
-/// Based on the 6502 CPU simulator and available VIC20 ROMs
+/// Based on the 6502 CPU simulator and available C64 ROMs
 /// The user can write BASIC commands but no line editing capabilities
 /// are yet available.
 //===----------------------------------------------------------------------===//
@@ -26,18 +26,19 @@ int main(int argc, char *argv[]) {
   //cpu.debugOn();
   //cpu.setTraceAddr(config.traceAddr);
 
-  Hooks c64(mem, 41,26);
+  Hooks sys(mem, 41,26);
+
   while (1) {
     cpu.clearInstructionCount();
     cpu.run(100000);
 
-    mem.writeByte(0xD012, 0);
+    mem.writeByte(0xD012, 0); // video scanning
 
-    c64.printScreen(40, 25, 0x400);
+    sys.printScreen(40, 25, 0x400);
     usleep(10000);
 
-    if (c64.getChar(ch)) { // a key was pressed
-      if (c64.handleKey(ch)) {
+    if (sys.getChar(ch)) { // a key was pressed
+      if (sys.handleKey(ch)) {
         return 0;
       }
     }
