@@ -1,16 +1,79 @@
-// Copyright (C) 2020 Morten Jagd Christensen, LICENSE: BSD2
-//===----------------------------------------------------------------------===//
-///
-/// \file
-///
-/// \brief Memory abstraction for the 6502 emulator
-///
-/// This class implements a rudimentary VIC-20 simulator based on the
-/// original vic-20 ROMs and some custom and reverse engineered code.
-//===----------------------------------------------------------------------===//
 
-// Routine used to decode screen memory to ASCII chars
-char getChar(uint8_t charcode) {
+
+
+#include <src/pet/Hooks.h>
+
+
+Hooks::Hooks(Memory & memory, int X, int Y) : mem(memory)  {
+  initscr();
+  (void) cbreak();		// take input chars one at a time, no wait for \n
+  (void) noecho();		// don't echo input
+  refresh();
+
+  win = newwin(Y+1, X+1, 0, 0);
+  box(win, '|', '-');
+  nodelay(win, TRUE); // don't 'hang' in getch()
+  scrollok(win, TRUE);
+  keypad(win, TRUE);
+  wmove(win, 0, 0);
+}
+
+Hooks::~Hooks() {
+  endwin();
+}
+
+bool Hooks::getChar(int & ch) {
+  ch = wgetch(win);
+  if (ch == ERR) {
+    return false;
+  }
+  return true;
+}
+
+
+void Hooks::printScreen(int X, int Y, uint16_t screenaddr) {
+  char buffer[1024];
+  for (int y = 0; y < Y; y++) {
+    wmove(win, y+1, 1);
+    int i = 0;
+    for (int x = 0; x < X; x++) {
+      uint16_t addr = screenaddr + y*X + x;
+      buffer[i++] = charToAscii(mem.readByte(addr));
+    }
+    buffer[i++] = 0;
+    wprintw(win, "%s", buffer);
+  }
+  // Move cursor to where VIC thinks it is
+  wmove(win, mem.readByte(0xD6)+1, mem.readByte(0xD3)+1);
+  wrefresh(win);
+}
+
+
+
+bool Hooks::handleKey(int ch) {
+  bool doexit = false;
+  switch(ch) {
+    case 27: // Escape on Mac
+      doexit = true;
+      break;
+
+    case 10:  // Newline on Mac
+      mem.writeByte(0x277, 13);
+      mem.writeByte(0xC6, 1);
+      break;
+    // write character to VIC20 keyboard buffer
+    default:
+      mem.writeByte(0x277, ch);
+      mem.writeByte(0xC6, 1);
+      // wprintw(win, "%d", ch);
+      // wrefresh(win);
+      break;
+  }
+  return doexit;
+}
+
+
+char Hooks::charToAscii(uint8_t charcode) {
   switch (charcode) {
     case 0x00: return '@'; break;
     case 0x01: return 'A'; break;

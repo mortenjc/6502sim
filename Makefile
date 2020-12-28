@@ -30,11 +30,11 @@ build/CPUHelpers.o: src/CPUHelpers.cpp $(COMMONINC)
 bin/sim6502: build/sim6502.o $(COMMONOBJ)
 	g++ $(CFLAGS) build/sim6502.o $(COMMONOBJ) -o $@
 
-bin/vic20: src/pet/vic20.cpp $(COMMONOBJ) src/pet/screenchar.h
-	g++ $(CFLAGS) src/pet/vic20.cpp $(COMMONOBJ) -o $@ -lncurses
+bin/vic20: src/pet/vic20.cpp src/pet/Hooks.cpp src/pet/Hooks.h $(COMMONOBJ)
+	g++ $(CFLAGS) src/pet/vic20.cpp src/pet/Hooks.cpp $(COMMONOBJ) -o $@ -lncurses
 
-bin/c64: src/pet/comm64.cpp $(COMMONOBJ) src/pet/screenchar.h
-	g++ $(CFLAGS) src/pet/comm64.cpp $(COMMONOBJ) -o $@ -lncurses
+bin/c64: src/pet/comm64.cpp src/pet/Hooks.cpp src/pet/Hooks.h $(COMMONOBJ)
+	g++ $(CFLAGS) src/pet/comm64.cpp src/pet/Hooks.cpp $(COMMONOBJ) -o $@ -lncurses
 
 # Test targets
 test: $(TESTPROGS)

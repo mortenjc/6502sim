@@ -189,9 +189,9 @@ std::vector<Snippet> weekday {
    // 2 may 1967 - tuesday (2)
    // 20 december 2020 - sunday (0)
   {0x1000, "main()", {
-    LDYI, (1995 - 1900),     // 2020   (2020 - 1900)
-    LDXI,  11,                // Month
-    LDAI,  01,                // Day
+    LDYI, (1967 - 1900),     // 2020   (2020 - 1900)
+    LDXI,  05,                // Month
+    LDAI,  02,                // Day
     JSR,  0x00, 0x15,        // to weekday()
     NOP,
   }},
@@ -230,7 +230,7 @@ std::vector<Snippet> weekday {
 
 // Finding prime numbers using the Sieve of Eratosthenes
 // From https://rosettacode.org/wiki/Sieve_of_Eratosthenes#6502_Assembly
-// Seems to produce primes, but still has bugs
+// Seems to produce primes, but still has bugs so doesn't get them all
 std::vector<Snippet> sieve {
   { 0x1000, "main", {
       LDAI, 0xD0,         // Find primes less than A

@@ -22,13 +22,13 @@ CPU cpu(mem);
 void prgFibonacci() {
     mem.loadSnippets(fibonacci32);
     cpu.run(-1);
-    mem.dump(0x0028,  4); // fibonacci32
+    mem.dump(0x0028,  4); // result: largst fib below 2^32
 }
 
 void prgSieve() {
     mem.loadSnippets(sieve);
     cpu.run(-1);
-    mem.dump(0x3000, 16); // sieve
+    mem.dump(0x3000, 16); // Primes
     mem.dump(0x3010, 16);
     mem.dump(0x3020, 16);
 }
