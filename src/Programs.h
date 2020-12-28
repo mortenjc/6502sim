@@ -189,9 +189,9 @@ std::vector<Snippet> weekday {
    // 2 may 1967 - tuesday (2)
    // 20 december 2020 - sunday (0)
   {0x1000, "main()", {
-    LDYI, (2020 - 1900),     // 2020   (2020 - 1900)
-    LDXI,  12,                // Month
-    LDAI,  20,                // Day
+    LDYI, (1995 - 1900),     // 2020   (2020 - 1900)
+    LDXI,  11,                // Month
+    LDAI,  01,                // Day
     JSR,  0x00, 0x15,        // to weekday()
     NOP,
   }},

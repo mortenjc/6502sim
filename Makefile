@@ -1,6 +1,6 @@
 
 
-PROGS = bin/vic20 bin/sim6502
+PROGS = bin/c64 bin/vic20 bin/sim6502
 TESTPROGS = bin/cputest bin/branchtest bin/ldatest bin/adctest bin/sbctest
 
 CFLAGS = -O3 -I. -I src -I test --std=c++11
@@ -32,6 +32,9 @@ bin/sim6502: build/sim6502.o $(COMMONOBJ)
 
 bin/vic20: src/vic20/main.cpp $(COMMONOBJ) src/vic20/vic20.h
 	g++ $(CFLAGS) src/vic20/main.cpp $(COMMONOBJ) -o $@ -lncurses
+
+bin/c64: src/c64/main.cpp $(COMMONOBJ) src/vic20/vic20.h
+	g++ $(CFLAGS) src/c64/main.cpp $(COMMONOBJ) -o $@ -lncurses
 
 # Test targets
 test: $(TESTPROGS)

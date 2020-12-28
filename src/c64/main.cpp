@@ -65,7 +65,7 @@ void printScreen(WINDOW * win, int X, int Y) {
     wmove(win, y, 0);
     int i = 0;
     for (int x = 0; x < X; x++) {
-      uint16_t addr = 0x1000 + y*X + x;
+      uint16_t addr = 0x0400 + y*X + x;
       buffer[i++] = getChar(mem.readByte(addr));
     }
     buffer[i++] = 0;
@@ -101,18 +101,20 @@ bool handleKey(int ch) {
 int main(int argc, char *argv[]) {
   int ch;
 
-  mem.loadBinaryFile("src/vic20/roms/vic20rom.bin", 0x8000);
+  mem.loadBinaryFile("src/c64/roms/c64.bin", 0xA000);
   cpu.reset(0x0000);
   //cpu.debugOn();
   //cpu.setTraceAddr(config.traceAddr);
 
-  Window vic(23,24);
+  Window vic(41,25);
   auto win = vic.win;
   while (1) {
     cpu.clearInstructionCount();
     cpu.run(100000);
 
-    printScreen(win, 22,23);
+    mem.writeByte(0xD012, 0);
+
+    printScreen(win, 40,25);
     wrefresh(win);
     usleep(10000);
 
