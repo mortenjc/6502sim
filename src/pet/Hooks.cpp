@@ -1,4 +1,11 @@
-
+// Copyright (C) 2020 Morten Jagd Christensen, LICENSE: BSD2
+//===----------------------------------------------------------------------===//
+///
+/// \file
+///
+/// \brief Implementation of hooks for keyboard and screen
+///
+//===----------------------------------------------------------------------===//
 
 
 #include <src/pet/Hooks.h>
@@ -9,6 +16,9 @@ Hooks::Hooks(Memory & memory, int X, int Y) : mem(memory)  {
   (void) cbreak();		// take input chars one at a time, no wait for \n
   (void) noecho();		// don't echo input
   refresh();
+
+  //start_color();
+  //init_pair(1, COLOR_BLACK, COLOR_BLUE);
 
   win = newwin(Y+1, X+1, 0, 0);
   box(win, '|', '-');
@@ -33,6 +43,7 @@ bool Hooks::getChar(int & ch) {
 
 void Hooks::printScreen(int X, int Y, uint16_t screenaddr) {
   char buffer[1024];
+  //attron(COLOR_PAIR(0));
   for (int y = 0; y < Y; y++) {
     wmove(win, y+1, 1);
     int i = 0;
@@ -45,9 +56,9 @@ void Hooks::printScreen(int X, int Y, uint16_t screenaddr) {
   }
   // Move cursor to where VIC thinks it is
   wmove(win, mem.readByte(0xD6)+1, mem.readByte(0xD3)+1);
+  //attroff(COLOR_PAIR(0));
   wrefresh(win);
 }
-
 
 
 bool Hooks::handleKey(int ch) {
