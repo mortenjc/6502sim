@@ -7,7 +7,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-
+#include <ncurses.h>
 #include <src/pet/Hooks.h>
 #include <src/pet/gfx.h>
 
@@ -19,7 +19,7 @@ Hooks::Hooks(Memory & memory, int X, int Y, bool Debug)
 
   // X11 bitmap screen
   // Open a new window for drawing.
-  gfxp = new gfx::GFX();
+  gfxp = new GFX();
 	gfxp->gfx_open(X * 8, Y * 8, "Example Graphics Program");
 
 	// Set the current drawing color to green.
@@ -31,9 +31,6 @@ Hooks::Hooks(Memory & memory, int X, int Y, bool Debug)
   (void) cbreak();		// take input chars one at a time, no wait for \n
   (void) noecho();		// don't echo input
   refresh();
-
-  //start_color();
-  //init_pair(1, COLOR_BLACK, COLOR_BLUE);
 
   win = newwin(Y+1, X+1, 0, 0);
   box(win, '|', '-');
@@ -61,7 +58,7 @@ void Hooks::printScreen(int X, int Y, uint16_t screenaddr, bool drawPixmap) {
   if (drawPixmap) {
     gfxp->gfx_clear();
   }
-  //attron(COLOR_PAIR(0));
+
   for (int y = 0; y < Y; y++) {
     wmove(win, y+1, 1);
     int i = 0;
@@ -78,7 +75,7 @@ void Hooks::printScreen(int X, int Y, uint16_t screenaddr, bool drawPixmap) {
   }
   // Move cursor to where VIC thinks it is
   wmove(win, mem.readByte(0xD6)+1, mem.readByte(0xD3)+1);
-  //attroff(COLOR_PAIR(0));
+
   wrefresh(win);
   if (drawPixmap) {
     gfxp->gfx_flush(); // bitmap screen
@@ -111,25 +108,30 @@ void Hooks::plotChar(uint8_t ch, int X, int Y, uint16_t charaddr) {
     if (line & 0x80)
       gfxp->gfx_point(xoff + 0, yoff + i);
   }
-
 }
 
+
+// Typing a key amounts to write the key value to the buffer, then
+// write the number of characters (1) in the buffer to 0xC6
+void Hooks::typeKey(int key) {
+  mem.writeByte(0x277, key);
+  mem.writeByte(0xC6, 1);
+}
 
 bool Hooks::handleKey(int ch) {
   bool doexit = false;
   switch(ch) {
+    case 127: // backspace on Mac
+      typeKey(20);
+      break;
     case 27: // Escape on Mac
       doexit = true;
       break;
-
     case 10:  // Newline on Mac
-      mem.writeByte(0x277, 13);
-      mem.writeByte(0xC6, 1);
+      typeKey(13);
       break;
-    // write character to VIC20 keyboard buffer
     default:
-      mem.writeByte(0x277, ch);
-      mem.writeByte(0xC6, 1);
+      typeKey(ch);
       // wprintw(win, "%d", ch);
       // wrefresh(win);
       break;

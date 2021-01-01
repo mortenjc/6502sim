@@ -16,15 +16,10 @@ Version 2, 9/23/2011 - Fixes a bug that could result in jerky animation.
 
 #include <src/pet/gfx.h>
 
-
-namespace gfx {
-
 /*
 gfx_open creates several X11 objects, and stores them in globals
 for use by the other functions in the library.
 */
-
-
 
 /* Open a new graphics window. */
 
@@ -219,5 +214,3 @@ void GFX::gfx_flush()
 		return;
 	XFlush(gfx_display);
 }
-
-} // namespace

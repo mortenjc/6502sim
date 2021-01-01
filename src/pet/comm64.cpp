@@ -6,25 +6,29 @@
 /// \brief Rudimentary C64 emulation
 ///
 /// Based on the 6502 CPU simulator and available C64 ROMs
-/// The user can write BASIC commands but no line editing capabilities
-/// are yet available.
+/// The user can write BASIC commands and backspace is supported. If
+/// the DISPLAY environment is set then a bitmap screen is shown which supports
+/// the graphical characters. If not, then a ncurses screen is used and
+/// that can only show a limited number of characters and numbers.
 //===----------------------------------------------------------------------===//
 
-#include <ncurses.h>
 #include <CPU.h>
-#include <Memory.h>
 #include <pet/Hooks.h>
-// #include <CLI11/include/CLI/CLI.hpp>
+
+#ifdef Success
+#undef Success
+#include <CLI11/include/CLI/CLI.hpp>
+#endif
 
 
 int main(int argc, char *argv[]) {
   Memory mem;
   CPU cpu(mem);
-  // CLI::App app{"C64 Simulator"};
+  CLI::App app{"C64 Emulator"};
 
   bool Debug = false;
-  // app.add_flag("-d,--debug", Debug, "enable debug");
-  // CLI11_PARSE(app, argc, argv);
+  app.add_flag("-d,--debug", Debug, "enable debug");
+  CLI11_PARSE(app, argc, argv);
   int ch;
 
   mem.loadBinaryFile("src/pet/c64/kernal.901227-02.bin", 0xE000);
@@ -41,10 +45,9 @@ int main(int argc, char *argv[]) {
   int printscr = 5;
   while (1) {
     cpu.clearInstructionCount();
-    cpu.run(100000);
+    cpu.run(10000);
 
     mem.writeByte(0xD012, 0); // video scanning
-
 
     if (not Debug) {
       printscr--;

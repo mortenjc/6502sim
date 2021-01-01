@@ -12,8 +12,6 @@ Version 2, 9/23/2011 - Fixes a bug that could result in jerky animation.
 
 #pragma once
 
-namespace gfx {
-
 #include <X11/Xlib.h>
 
 class GFX {
@@ -69,5 +67,3 @@ private:
   int saved_xpos = 0;
   int saved_ypos = 0;
 };
-
-}
