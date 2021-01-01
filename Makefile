@@ -10,6 +10,10 @@ TESTLDFLAGS = -L googletest/build/lib -lgtest
 COMMONINC = src/CPU.h  src/Programs.h src/Memory.h src/Opcodes.h src/Macros.h
 COMMONOBJ = build/CPU.o build/CPUInstructions.o build/CPUHelpers.o
 
+PETOBJ = build/gfx.o build/Hooks.o
+PETCFLAGS = -I/usr/X11R6/include
+PETLDFLAGS =  -L/usr/X11R6/lib -lncurses -lX11 -lm
+
 
 _dummy := $(shell mkdir -p build)
 
@@ -27,14 +31,20 @@ build/CPUInstructions.o: src/CPUInstructions.cpp $(COMMONINC)
 build/CPUHelpers.o: src/CPUHelpers.cpp $(COMMONINC)
 	g++ $(CFLAGS) $< -c -o $@
 
+build/Hooks.o: src/pet/Hooks.cpp $(COMMONINC) src/pet/Hooks.h src/pet/gfx.h
+	g++ $(CFLAGS) $(PETCFLAGS) $< -c -o $@
+
+build/gfx.o: src/pet/gfx.cpp $(COMMONINC) src/pet/Hooks.h src/pet/gfx.h
+	g++ $(CFLAGS) $(PETCFLAGS) $< -c -o $@
+
 bin/sim6502: build/sim6502.o $(COMMONOBJ)
 	g++ $(CFLAGS) build/sim6502.o $(COMMONOBJ) -o $@
 
-bin/vic20: src/pet/vic20.cpp src/pet/Hooks.cpp src/pet/Hooks.h $(COMMONOBJ)
-	g++ $(CFLAGS) src/pet/vic20.cpp src/pet/Hooks.cpp $(COMMONOBJ) -o $@ -lncurses
+bin/vic20: src/pet/vic20.cpp  src/pet/Hooks.h src/pet/gfx.h $(COMMONOBJ) $(PETOBJ)
+	g++ $(CFLAGS) $(PETCFLAGS) src/pet/vic20.cpp $(COMMONOBJ) $(PETOBJ) $(PETLDFLAGS) -o $@
 
-bin/c64: src/pet/comm64.cpp src/pet/Hooks.cpp src/pet/Hooks.h $(COMMONOBJ)
-	g++ $(CFLAGS) src/pet/comm64.cpp src/pet/Hooks.cpp $(COMMONOBJ) -o $@ -lncurses
+bin/c64: src/pet/comm64.cpp src/pet/Hooks.h src/pet/gfx.h $(COMMONOBJ) $(PETOBJ)
+	g++ $(CFLAGS) $(PETCFLAGS) src/pet/comm64.cpp $(COMMONOBJ) $(PETOBJ) $(PETLDFLAGS) -o $@
 
 # Test targets
 test: $(TESTPROGS)

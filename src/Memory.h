@@ -58,7 +58,7 @@ public:
     }
     uint8_t byte;
     while ((loadAddress <= 0xFFFF) and (read(fd, &byte, 1) != 0 )) {
-      writeByte(loadAddress++, byte);
+      writeByteRaw(loadAddress++, byte);
     }
   }
 
@@ -74,7 +74,13 @@ public:
     return mem[address];
   }
 
+  void writeByteRaw(uint16_t address, uint8_t value) {
+    mem[address] = value;
+  }
+
   void writeByte(uint16_t address, uint8_t value) {
+    if (isRom(address))
+      return;
     mem[address] = value;
   }
 
@@ -84,9 +90,24 @@ public:
   }
 
   void writeWord(uint16_t address, uint16_t value) {
+    if (isRom(address))
+      return;
     assert(address < 0xFFFF);
     mem[address] = value & 0xFF;
     mem[address + 1] = value >> 8;
+  }
+
+  bool isRom(uint16_t address) {
+    return false;
+    if (address >= 0xE000)
+      return true;
+
+    if ((address >= 0xA000) and (address < 0xBFFF))
+      return true;
+
+    if ((address >= 0xD000) and (address <= 0xDFFF))
+      return true;
+    return false;
   }
 
 private:

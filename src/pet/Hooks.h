@@ -9,15 +9,17 @@
 
 #include <ncurses.h>
 #include <Memory.h>
+#include <pet/gfx.h>
 
 
 class Hooks {
 public:
-  Hooks(Memory & memory, int X, int Y);
+  Hooks(Memory & memory, int X, int Y, bool Debug);
 
   ~Hooks();
 
-  void printScreen(int X, int Y, uint16_t addr);
+  void printScreen(int X, int Y, uint16_t addr, bool drawPixmap);
+  void plotChar(uint8_t ch, int X, int Y, uint16_t charaddr);
 
   bool getChar(int & read);
   bool handleKey(int ch);
@@ -27,4 +29,7 @@ public:
 private:
   int ch;
   Memory & mem;
+  uint8_t Xres; // width in characters
+  uint8_t Yres; // height in characters
+  gfx::GFX * gfxp;
 };

@@ -9,9 +9,24 @@
 
 
 #include <src/pet/Hooks.h>
+#include <src/pet/gfx.h>
 
 
-Hooks::Hooks(Memory & memory, int X, int Y) : mem(memory)  {
+Hooks::Hooks(Memory & memory, int X, int Y, bool Debug)
+             : mem(memory), Xres(X), Yres(Y)  {
+  if (Debug)
+    return;
+
+  // X11 bitmap screen
+  // Open a new window for drawing.
+  gfxp = new gfx::GFX();
+	gfxp->gfx_open(X * 8, Y * 8, "Example Graphics Program");
+
+	// Set the current drawing color to green.
+	gfxp->gfx_color(0,200,100);
+
+
+  // ncurses window
   initscr();
   (void) cbreak();		// take input chars one at a time, no wait for \n
   (void) noecho();		// don't echo input
@@ -41,8 +56,11 @@ bool Hooks::getChar(int & ch) {
 }
 
 
-void Hooks::printScreen(int X, int Y, uint16_t screenaddr) {
+void Hooks::printScreen(int X, int Y, uint16_t screenaddr, bool drawPixmap) {
   char buffer[1024];
+  if (drawPixmap) {
+    gfxp->gfx_clear();
+  }
   //attron(COLOR_PAIR(0));
   for (int y = 0; y < Y; y++) {
     wmove(win, y+1, 1);
@@ -50,6 +68,10 @@ void Hooks::printScreen(int X, int Y, uint16_t screenaddr) {
     for (int x = 0; x < X; x++) {
       uint16_t addr = screenaddr + y*X + x;
       buffer[i++] = charToAscii(mem.readByte(addr));
+
+      if (drawPixmap) {
+        plotChar(mem.readByte(addr), x, y, 0x8000);
+      }
     }
     buffer[i++] = 0;
     wprintw(win, "%s", buffer);
@@ -58,6 +80,38 @@ void Hooks::printScreen(int X, int Y, uint16_t screenaddr) {
   wmove(win, mem.readByte(0xD6)+1, mem.readByte(0xD3)+1);
   //attroff(COLOR_PAIR(0));
   wrefresh(win);
+  if (drawPixmap) {
+    gfxp->gfx_flush(); // bitmap screen
+  }
+}
+
+
+void Hooks::plotChar(uint8_t ch, int X, int Y, uint16_t charaddr) {
+  uint16_t charoff = 8 * ch; // start of char's rom image
+
+  uint16_t xoff = X * 8; // bits
+  uint16_t yoff = Y * 8;
+
+  for (int i = 0; i < 8; i++) {
+    uint8_t line = mem.readByte(charaddr + charoff + i);
+    if (line & 0x01)
+      gfxp->gfx_point(xoff + 7, yoff + i);
+    if (line & 0x02)
+      gfxp->gfx_point(xoff + 6, yoff + i);
+    if (line & 0x04)
+      gfxp->gfx_point(xoff + 5, yoff + i);
+    if (line & 0x08)
+      gfxp->gfx_point(xoff + 4, yoff + i);
+    if (line & 0x10)
+      gfxp->gfx_point(xoff + 3, yoff + i);
+    if (line & 0x20)
+      gfxp->gfx_point(xoff + 2, yoff + i);
+    if (line & 0x40)
+      gfxp->gfx_point(xoff + 1, yoff + i);
+    if (line & 0x80)
+      gfxp->gfx_point(xoff + 0, yoff + i);
+  }
+
 }
 
 
