@@ -57,6 +57,7 @@ public:
   void gfx_flush();
 
 private:
+  bool initialized{false};
   Display *gfx_display=0;
   Window  gfx_window;
   GC      gfx_gc;

@@ -33,7 +33,8 @@ void GFX::gfx_open( int width, int height, const char *title )
 	gfx_display = XOpenDisplay(0);
 	if(!gfx_display) {
 		fprintf(stderr,"gfx_open: unable to open the graphics window.\n");
-		exit(1);
+		fprintf(stderr,"gfx_open: try 'export DISPLAY=:0' and retry\n");
+		return;
 	}
 
 	Visual *visual = DefaultVisual(gfx_display,0);
@@ -73,12 +74,16 @@ void GFX::gfx_open( int width, int height, const char *title )
 		if (e.type == MapNotify)
 			break;
 	}
+
+	initialized = true;
 }
 
 /* Draw a single point at (x,y) */
 
 void GFX::gfx_point( int x, int y )
 {
+	if (not initialized)
+		return;
 	XDrawPoint(gfx_display,gfx_window,gfx_gc,x,y);
 }
 
@@ -86,6 +91,9 @@ void GFX::gfx_point( int x, int y )
 
 void GFX::gfx_line( int x1, int y1, int x2, int y2 )
 {
+	if (not initialized)
+		return;
+
 	XDrawLine(gfx_display,gfx_window,gfx_gc,x1,y1,x2,y2);
 }
 
@@ -93,6 +101,9 @@ void GFX::gfx_line( int x1, int y1, int x2, int y2 )
 
 void GFX::gfx_color( int r, int g, int b )
 {
+	if (not initialized)
+	  return;
+
 	XColor color;
 
 	if(gfx_fast_color_mode) {
@@ -114,6 +125,8 @@ void GFX::gfx_color( int r, int g, int b )
 
 void GFX::gfx_clear()
 {
+	if (not initialized)
+		return;
 	XClearWindow(gfx_display,gfx_window);
 }
 
@@ -121,6 +134,8 @@ void GFX::gfx_clear()
 
 void GFX::gfx_clear_color( int r, int g, int b )
 {
+	if (not initialized)
+		return;
 	XColor color;
 	color.pixel = 0;
 	color.red = r<<8;
@@ -135,31 +150,36 @@ void GFX::gfx_clear_color( int r, int g, int b )
 
 int GFX::gfx_event_waiting()
 {
-       XEvent event;
+	if (not initialized)
+		return 0;
 
-       gfx_flush();
+	XEvent event;
 
-       while (1) {
-               if(XCheckMaskEvent(gfx_display,-1,&event)) {
-                       if(event.type==KeyPress) {
-                               XPutBackEvent(gfx_display,&event);
-                               return 1;
-                       } else if (event.type==ButtonPress) {
-                               XPutBackEvent(gfx_display,&event);
-                               return 1;
-                       } else {
-                               return 0;
-                       }
-               } else {
-                       return 0;
-               }
-       }
+	gfx_flush();
+
+	while (1) {
+		if(XCheckMaskEvent(gfx_display,-1,&event)) {
+			if(event.type==KeyPress) {
+				XPutBackEvent(gfx_display,&event);
+				return 1;
+			} else if (event.type==ButtonPress) {
+				XPutBackEvent(gfx_display,&event);
+				return 1;
+			} else {
+				return 0;
+			}
+		} else {
+			return 0;
+		}
+	}
 }
 
 /* Wait for the user to press a key or mouse button. */
 
 char GFX::gfx_wait()
 {
+	if (not initialized)
+		return ' ';
 	XEvent event;
 
 	gfx_flush();
@@ -195,6 +215,8 @@ int GFX::gfx_ypos()
 
 void GFX::gfx_flush()
 {
+	if (not initialized)
+		return;
 	XFlush(gfx_display);
 }
 
