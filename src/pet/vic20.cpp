@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
     cpu.debugOn();
   //cpu.setTraceAddr(config.traceAddr);
 
-  Hooks sys(mem, 23,24, Debug);
+  Hooks sys(cpu, mem, 23,24, Debug);
   int printscr = 5;
   while (1) {
     cpu.clearInstructionCount();

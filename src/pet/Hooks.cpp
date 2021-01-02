@@ -11,20 +11,41 @@
 #include <src/pet/Hooks.h>
 #include <src/pet/gfx.h>
 
+std::string prgm =
+"1000 REM STATE INITIALIZATION\n"
+"1010 X=0\n"
+"1020 Y=0\n"
+"1030 DX=1\n"
+"1040 DY=1\n"
+"2000 REM BALL MOVEMENT\n"
+"2010 POKE (1024 + Y*40 + X), 32\n"
+"2020 X=X+DX\n"
+"2030 Y=Y+DY\n"
+"2040 IF X=40 THEN DX=-1\n"
+"2050 IF X=40 THEN X=38\n"
+"2060 IF X<0 THEN DX=1\n"
+"2070 IF X<0 THEN X=1\n"
+"2080 IF Y=25 THEN DY=-1\n"
+"2090 IF Y=25 THEN Y=23\n"
+"2100 IF Y<0 THEN DY=1\n"
+"2110 IF Y<0 THEN Y=2\n"
+"2200 POKE (1024 + Y*40 +X), 81\n"
+"2210 GOTO 2000\n";
 
-Hooks::Hooks(Memory & memory, int X, int Y, bool Debug)
-             : mem(memory), Xres(X), Yres(Y)  {
+
+Hooks::Hooks(CPU & Cpu, Memory & memory, int X, int Y, bool Debug)
+             : cpu(Cpu), mem(memory), Xres(X), Yres(Y)  {
   if (Debug)
     return;
 
   // X11 bitmap screen
   // Open a new window for drawing.
   gfxp = new GFX();
-	gfxp->gfx_open(X * 8, Y * 8, "Example Graphics Program");
+	gfxp->gfx_open((X-1) * 8, (Y-1) * 8, "6502 VIC2/Commodore64");
 
-	// Set the current drawing color to green.
-	gfxp->gfx_color(0,200,100);
-
+	// Set C64 colors
+  gfxp->gfx_clear_color(0x35, 0x28, 0x79);
+	gfxp->gfx_color(0x70,0xA4,0xB2);
 
   // ncurses window
   initscr();
@@ -83,14 +104,14 @@ void Hooks::printScreen(int X, int Y, uint16_t screenaddr, bool drawPixmap) {
 }
 
 
-void Hooks::plotChar(uint8_t ch, int X, int Y, uint16_t charaddr) {
-  uint16_t charoff = 8 * ch; // start of char's rom image
+void Hooks::plotChar(uint8_t ch, int X, int Y, uint16_t charromaddr) {
+  uint16_t charaddr = charromaddr + 8 * ch; // addres of char's rom bitmap image
 
   uint16_t xoff = X * 8; // bits
   uint16_t yoff = Y * 8;
 
   for (int i = 0; i < 8; i++) {
-    uint8_t line = mem.readByte(charaddr + charoff + i);
+    uint8_t line = mem.readByte(charaddr + i);
     if (line & 0x01)
       gfxp->gfx_point(xoff + 7, yoff + i);
     if (line & 0x02)
@@ -118,22 +139,50 @@ void Hooks::typeKey(int key) {
   mem.writeByte(0xC6, 1);
 }
 
+void Hooks::load(std::string program) {
+  for (int i = 0; i < program.size(); i++) {
+    char ch = program[i];
+    if (ch == '\n')
+      typeKey(13);
+    else
+      typeKey(ch);
+
+    cpu.clearInstructionCount();
+    cpu.run(20000);
+  }
+}
+
+// These values work for my MacBook keyboard
 bool Hooks::handleKey(int ch) {
   bool doexit = false;
+
+  // wprintw(win, "%d\n", ch);
+  // wrefresh(win);
+
   switch(ch) {
-    case 127: // backspace on Mac
+    case 261: // right arrow
+      break;
+    case 260: // left arrow
+      break;
+    case 259: // up arrow
+      break;
+    case 258: // down arrow
+      break;
+    case 127: // backspace
       typeKey(20);
       break;
-    case 27: // Escape on Mac
+    case 27: // escape
       doexit = true;
       break;
-    case 10:  // Newline on Mac
+    case 10:  // enter
       typeKey(13);
       break;
+    case 9: // tab
+      load(prgm); // load c64 bouncing ball program
+      break;
+
     default:
       typeKey(ch);
-      // wprintw(win, "%d", ch);
-      // wrefresh(win);
       break;
   }
   return doexit;
