@@ -60,7 +60,11 @@ this CPU-cycle accurate. There is not support for other graphics modes or sound.
 
 ROMs were downloaded from: http://www.zimmers.net/anonftp/pub/cbm/firmware/computers/
 
-## Running
+You need X11 to get the rendered screen else you will only get a ncurses based
+ascii screen.
+
+## Running\
+    > export DISPLAY=:0
     > ./bin/c64
     > ./bin/vic20
 

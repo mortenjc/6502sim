@@ -1,14 +1,17 @@
 /*
-A simple graphics library for CSE 20211 by Douglas Thain
+  A simple graphics library for CSE 20211 by Douglas Thain
 
-This work is licensed under a Creative Commons Attribution 4.0 International License.  https://creativecommons.org/licenses/by/4.0/
+  This work is licensed under a Creative Commons Attribution 4.0 International License.
+  https://creativecommons.org/licenses/by/4.0/
 
-For complete documentation, see:
-http://www.nd.edu/~dthain/courses/cse20211/fall2013/gfx
-Version 3, 11/07/2012 - Now much faster at changing colors rapidly.
-Version 2, 9/23/2011 - Fixes a bug that could result in jerky animation.
+  For complete documentation, see:
+  http://www.nd.edu/~dthain/courses/cse20211/fall2013/gfx
+  Version 3, 11/07/2012 - Now much faster at changing colors rapidly.
+  Version 2, 9/23/2011 - Fixes a bug that could result in jerky animation.
 */
 
+/// 2020 12: Additions by Morten Jagd Christensen: Wrapped the C api in a C++
+/// class. No functional changes.
 
 #include <unistd.h>
 #include <stdio.h>
@@ -22,7 +25,6 @@ for use by the other functions in the library.
 */
 
 /* Open a new graphics window. */
-
 void GFX::gfx_open( int width, int height, const char *title )
 {
 	gfx_display = XOpenDisplay(0);
@@ -73,8 +75,7 @@ void GFX::gfx_open( int width, int height, const char *title )
 	initialized = true;
 }
 
-/* Draw a single point at (x,y) */
-
+/// Draw a single point at (x,y)
 void GFX::gfx_point( int x, int y )
 {
 	if (not initialized)
@@ -82,8 +83,7 @@ void GFX::gfx_point( int x, int y )
 	XDrawPoint(gfx_display,gfx_window,gfx_gc,x,y);
 }
 
-/* Draw a line from (x1,y1) to (x2,y2) */
-
+/// Draw a line from (x1,y1) to (x2,y2)
 void GFX::gfx_line( int x1, int y1, int x2, int y2 )
 {
 	if (not initialized)
@@ -92,8 +92,7 @@ void GFX::gfx_line( int x1, int y1, int x2, int y2 )
 	XDrawLine(gfx_display,gfx_window,gfx_gc,x1,y1,x2,y2);
 }
 
-/* Change the current drawing color. */
-
+/// Change the current drawing color.
 void GFX::gfx_color( int r, int g, int b )
 {
 	if (not initialized)
@@ -116,8 +115,7 @@ void GFX::gfx_color( int r, int g, int b )
 	XSetForeground(gfx_display, gfx_gc, color.pixel);
 }
 
-/* Clear the graphics window to the background color. */
-
+/// Clear the graphics window to the background color.
 void GFX::gfx_clear()
 {
 	if (not initialized)
