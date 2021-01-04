@@ -64,7 +64,7 @@ ROMs were downloaded from: http://www.zimmers.net/anonftp/pub/cbm/firmware/compu
     > ./bin/c64
     > ./bin/vic20
 
-![images/c64screen.png]
+![c64 screen](images/c64screen.png)
 
 ## Dependencies
 CLI11 headers were included from https://github.com/CLIUtils/CLI11
