@@ -50,7 +50,7 @@ void prgDiv32() {
 void functional() {
   printf("Starting functional tests.\n");
   printf("Success if loop is detected at PC 0x3469\n");
-  mem.loadBinaryFile("data/6502_functional_test.bin", 0x0000);
+  mem.loadBinaryFile("test/data/6502_functional_test.bin", 0x0000);
   cpu.reset(0x400);
   cpu.setTraceAddr(0x3469);
   cpu.run(-1);

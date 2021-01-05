@@ -7,7 +7,7 @@
 ///
 //===----------------------------------------------------------------------===//
 
-#pragma once 
+#pragma once
 
 #include <ncurses.h>
 #include <CPU.h>
@@ -28,6 +28,7 @@ public:
   bool handleKey(int ch);
   char charToAscii(uint8_t charcode);
   void load(std::string program);
+  void loadFile();
 
 
 private:

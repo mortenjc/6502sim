@@ -10,6 +10,9 @@
 #include <ncurses.h>
 #include <src/pet/Hooks.h>
 #include <src/pet/gfx.h>
+#include <fstream>
+#include <streambuf>
+#include <iostream>
 
 std::string prgm =
 "1000 REM STATE INITIALIZATION\n"
@@ -50,15 +53,16 @@ Hooks::Hooks(CPU & Cpu, Memory & memory, int X, int Y, bool Debug)
   // ncurses window
   initscr();
   (void) cbreak();		// take input chars one at a time, no wait for \n
-  (void) noecho();		// don't echo input
+  //(void) noecho();		// don't echo input
   refresh();
 
-  win = newwin(Y+1, X+1, 0, 0);
-  box(win, '|', '-');
-  nodelay(win, TRUE); // don't 'hang' in getch()
-  scrollok(win, TRUE);
-  keypad(win, TRUE);
-  wmove(win, 0, 0);
+  //win = newwin(Y+1, X+1, 0, 0);
+  //win = newwin(0, 0, 0, 0);
+  //box(win, '|', '-');
+  nodelay(stdscr, TRUE); // don't 'hang' in getch()
+  scrollok(stdscr, TRUE);
+  //keypad(win, TRUE);
+  //wmove(win, 0, 0);
 }
 
 Hooks::~Hooks() {
@@ -66,7 +70,7 @@ Hooks::~Hooks() {
 }
 
 bool Hooks::getChar(int & ch) {
-  ch = wgetch(win);
+  ch = getch();
   if (ch == ERR) {
     return false;
   }
@@ -81,7 +85,7 @@ void Hooks::printScreen(int X, int Y, uint16_t screenaddr, bool drawPixmap) {
   }
 
   for (int y = 0; y < Y; y++) {
-    wmove(win, y+1, 1);
+    // wmove(win, y+1, 1);
     int i = 0;
     for (int x = 0; x < X; x++) {
       uint16_t addr = screenaddr + y*X + x;
@@ -92,12 +96,12 @@ void Hooks::printScreen(int X, int Y, uint16_t screenaddr, bool drawPixmap) {
       }
     }
     buffer[i++] = 0;
-    wprintw(win, "%s", buffer);
+    //wprintw(stdscr, "%s", buffer);
   }
   // Move cursor to where VIC thinks it is
-  wmove(win, mem.readByte(0xD6)+1, mem.readByte(0xD3)+1);
+  //wmove(stdscr, mem.readByte(0xD6)+1, mem.readByte(0xD3)+1);
 
-  wrefresh(win);
+  //wrefresh(win);
   if (drawPixmap) {
     gfxp->gfx_flush(); // bitmap screen
   }
@@ -142,14 +146,29 @@ void Hooks::typeKey(int key) {
 void Hooks::load(std::string program) {
   for (int i = 0; i < program.size(); i++) {
     char ch = program[i];
+
     if (ch == '\n')
       typeKey(13);
     else
       typeKey(ch);
 
     cpu.clearInstructionCount();
-    cpu.run(20000);
+    cpu.run(40000);
   }
+}
+
+
+void Hooks::loadFile() {
+  std::string filename;
+  wprintw(stdscr, "filename: ");
+  wrefresh(stdscr);
+  std::cin >> filename;
+  wprintw(stdscr, "%s\n", filename.c_str());
+  wrefresh(stdscr);
+  std::ifstream t(filename);
+  std::string str((std::istreambuf_iterator<char>(t)),
+                 std::istreambuf_iterator<char>());
+  load(str);
 }
 
 // These values work for my MacBook keyboard
@@ -178,7 +197,7 @@ bool Hooks::handleKey(int ch) {
       typeKey(13);
       break;
     case 9: // tab
-      load(prgm); // load c64 bouncing ball program
+      loadFile(); // load c64 bouncing ball program
       break;
 
     default:
