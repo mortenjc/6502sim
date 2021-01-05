@@ -43,8 +43,8 @@ public:
 
   void loadSnippets(std::vector<Snippet> & snippets) {
     for (auto & snippet : snippets) {
-      printf("Loading %5zu bytes @ 0x%04x - %s\n",
-             snippet.data.size(), snippet.address, snippet.name.c_str());
+      printf("%s - %5zu bytes @ 0x%04x\n",
+             snippet.name.c_str(), snippet.data.size(), snippet.address);
       load(snippet.address, snippet.data);
     }
   }

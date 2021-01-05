@@ -1,4 +1,5 @@
-
+# Copyright (C) 2020 Morten Jagd Christensen, LICENSE: BSD2
+#
 
 PROGS = bin/c64 bin/vic20 bin/sim6502
 TESTPROGS = bin/cputest bin/branchtest bin/ldatest bin/adctest bin/sbctest
@@ -7,7 +8,7 @@ CFLAGS = -O3 -I. -I src -I test --std=c++11
 TESTFLAGS = -I googletest/googletest/include/
 TESTLDFLAGS = -L googletest/build/lib -lgtest
 
-COMMONINC = src/CPU.h  src/Programs.h src/Memory.h src/Opcodes.h src/Macros.h
+COMMONINC = src/CPU.h  src/Programs.h src/Memory.h src/Opcodes.h
 COMMONOBJ = build/CPU.o build/CPUInstructions.o build/CPUHelpers.o
 
 PETOBJ = build/gfx.o build/Hooks.o
